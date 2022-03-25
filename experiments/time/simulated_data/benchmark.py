@@ -1,16 +1,14 @@
-import numpy as np
-from anndata import AnnData
-from typing import Callable, Optional, Any, Union, Literal
-from functools import wraps, partial
-from memory_profiler import memory_usage
-from time import perf_counter
+from typing import Any, Union, Literal, Callable, Optional
+
 from sacred import Experiment
-import seml
-import os
-import logging
-import pandas as pd
-from moscot_benchmarks.utils import benchmark_memory, benchmark_time
 from scipy.sparse import csr_matrix
+import seml
+
+import numpy as np
+
+from anndata import AnnData
+
+from moscot_benchmarks.utils import benchmark_time, benchmark_memory
 
 ex = Experiment()
 seml.setup_logger(ex)
@@ -32,9 +30,8 @@ def _benchmark_wot(
     local_pca: int,
     seed: Optional[int] = None,
 ):
-    import scanpy as sc
     import wot
-    from anndata import AnnData
+
     from jax.config import config
 
     config.update("jax_enable_x64", True)  # need this for "distance_between_pushed_masses"
@@ -60,8 +57,8 @@ def _benchmark_wot(
     benchmark_result, ot_result = benchmarked_f(key_value_1, key_value_2)
 
     if validate_ot:
-        gex_data_source = adata[adata.obs[key] == key_value_1].X #TODO: do we want to measure this in GEX or PCA space
-        gex_data_target = adata[adata.obs[key] == key_value_2].X #TODO: do we want to measure this in GEX or PCA space
+        gex_data_source = adata[adata.obs[key] == key_value_1].X  # TODO: do we want to measure this in GEX or PCA space
+        gex_data_target = adata[adata.obs[key] == key_value_2].X  # TODO: do we want to measure this in GEX or PCA space
         error = distance_between_pushed_masses(
             gex_data_source, gex_data_target, ot_result.transport_matrix, true_coupling, seed=seed
         )  # TODO check this is correct attribute
@@ -87,12 +84,14 @@ def _benchmark_moscot(
     online: bool = False,
     seed: Optional[int] = None,
     jit: Optional[bool] = False,
+    gamma: Optional[float] = None,
 ):
     from jax.config import config
 
     config.update("jax_enable_x64", True)
     from moscot.backends.ott import SinkhornSolver
     from moscot.problems.time._lineage import TemporalProblem
+
     from moscot_benchmarks.time._utils import distance_between_pushed_masses
 
     adata = adata[adata.obs[key].isin((key_value_1, key_value_2))].copy()
@@ -100,7 +99,7 @@ def _benchmark_moscot(
     if rank is None:
         solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations)
     else:
-        solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations, rank=rank)
+        solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations, rank=rank, gamma=gamma)
 
     tp = TemporalProblem(adata, solver=solver)
     tp.prepare(key, subset=[(key_value_1, key_value_2)], policy="sequential", callback_kwargs={"n_comps": local_pca})
@@ -111,8 +110,8 @@ def _benchmark_moscot(
     )
 
     if validate_ot:
-        gex_data_source = adata[adata.obs[key] == key_value_1].X #TODO: do we want to measure this in GEX or PCA space
-        gex_data_target = adata[adata.obs[key] == key_value_2].X #TODO: do we want to measure this in GEX or PCA space
+        gex_data_source = adata[adata.obs[key] == key_value_1].X  # TODO: do we want to measure this in GEX or PCA space
+        gex_data_target = adata[adata.obs[key] == key_value_2].X  # TODO: do we want to measure this in GEX or PCA space
         error = distance_between_pushed_masses(
             gex_data_source, gex_data_target, ot_result[key_value_1, key_value_2], true_coupling, seed=seed
         )  # TODO check this is correct attribute
@@ -153,7 +152,8 @@ def benchmark(
     rank: Optional[int] = None,
     online: bool = False,
     seed: Optional[int] = None,
-    jit: Optional[bool] = False
+    jit: Optional[bool] = False,
+    gamma: Optional[float] = None,
 ):
     import scanpy as sc
 
@@ -204,6 +204,7 @@ def benchmark(
             online=online,
             seed=seed,
             jit=jit,
-            )
+            gamma=gamma,
+        )
     else:
         raise NotImplementedError

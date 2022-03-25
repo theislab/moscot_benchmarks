@@ -1,11 +1,12 @@
-from typing import Union, Tuple, Optional
-import numpy.typing as npt
-import numpy as np
-from moscot.backends.ott._output import SinkhornOutput as Output
+from typing import Tuple, Union, Optional
+
 from scipy.sparse import csr_matrix
+from moscot.backends.ott._output import SinkhornOutput as Output
+
 from ott.core import sinkhorn
 from ott.geometry import pointcloud
-from ott.core import sinkhorn
+import numpy as np
+import numpy.typing as npt
 
 
 def distance_between_pushed_masses(
@@ -16,8 +17,12 @@ def distance_between_pushed_masses(
     eps: float = 0.1,
     seed: Optional[int] = None,
 ) -> float:
-    source_cost = _distance_pushed_masses(gex_data_source, output, true_coupling, forward=False, eps=eps, random=False, seed=seed)
-    target_cost = _distance_pushed_masses(gex_data_target, output, true_coupling, forward=True, eps=eps, random=False, seed=seed)
+    source_cost = _distance_pushed_masses(
+        gex_data_source, output, true_coupling, forward=False, eps=eps, random=False, seed=seed
+    )
+    target_cost = _distance_pushed_masses(
+        gex_data_target, output, true_coupling, forward=True, eps=eps, random=False, seed=seed
+    )
 
     independent_coupling_source_cost = _distance_pushed_masses(
         gex_data_source, output, true_coupling, forward=False, random=True
@@ -93,7 +98,7 @@ def _distance_pushed_masses(
     eps: float = 0.5,
     random: bool = False,
     seed: Optional[int] = None,
-    n_samples: Optional[int]=None,
+    n_samples: Optional[int] = None,
 ) -> float:
     rng = np.random.RandomState(seed=seed)
     n, m = output.shape if isinstance(output, np.ndarray) else output.shape

@@ -1,0 +1,75 @@
+seml:
+    executable: benchmark.py # relative path to the script that contains the experiment
+    conda_environment: moscot_with_cupti_cpu_new
+    name: tedsim_cpu_memory
+    output_dir: seml_results/tedsim_cpu_memory # this directory must exist already
+
+slurm: #TODO: SPECIFY
+    sbatch_options_template: CPU
+    sbatch_options:
+        partition: cpu_p  # num GPUs
+
+fixed:
+    benchmark_mode: cpu_memory
+    validate_ot: true
+    epsilon: 1e-2
+    lambda_1: 1
+    lambda_2: 50
+    threshold: 1e-3
+    max_iterations: 1e6
+    local_pca: 30
+    key_value_1: 0 #EXAMPLE
+    key_value_2: 1 #EXAMPLE
+    key_true_coupling: true_coupling #EXAMPLE
+    seed: 1234
+
+
+grid:
+    run:
+        type: range
+        min: 0
+        max: 5
+        step: 1
+    anndata_dir:
+        type: choice
+        options:
+        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_8192.h5ad
+        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_16384.h5ad
+        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_32768.h5ad
+        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_65536.h5ad
+        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_131072.h5ad
+WOT: #TODO: check this works for SEML, following Jan's example
+    fixed:
+        model: WOT
+
+moscot:
+    fixed:
+        model: moscot
+    grid:
+        online:
+            type: choice
+            options:
+            -   false
+            -   1024
+        jit:
+            type: choice
+            options:
+            -   true
+            -   false
+        rank:
+            type: choice
+            options:
+            -   None
+            -   5
+            -   10
+            -   50
+            -   200
+            -   1000
+        gamma: #make conditional on low rank = True
+            type: choice
+            options:
+            -   0.01
+            -   0.1
+            -   1
+            -   10
+            -   100
