@@ -11,7 +11,7 @@ slurm: #TODO: SPECIFY
 
 fixed:
     benchmark_mode: time
-    validate_ot: true
+    validate_ot: True
     epsilon: 1e-2
     lambda_1: 1
     lambda_2: 50
@@ -49,13 +49,13 @@ moscot:
         online:
             type: choice
             options:
-            -   false
+            -   False
             -   1024
         jit:
             type: choice
             options:
-            -   true
-            -   false
+            -   True
+            -   False
         rank:
             type: choice
             options:
