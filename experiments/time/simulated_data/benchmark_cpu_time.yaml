@@ -1,5 +1,5 @@
 seml:
-    executable: benchmark.py # relative path to the script that contains the experiment
+    executable: moscot_benchmarks/time/benchmark.py # relative path to the script that contains the experiment
     conda_environment: moscot_with_cupti_cpu_new
     name: tedsim_cpu_time
     output_dir: seml_results/tedsim_cpu_time # this directory must exist already

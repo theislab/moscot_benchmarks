@@ -4,7 +4,6 @@ import time
 
 from memory_profiler import memory_usage
 
-
 # DO NOT IMPORT ANY JAX FUNCTIONS HERE
 
 
