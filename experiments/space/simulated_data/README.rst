@@ -16,9 +16,9 @@ Deconvolution
 2. ``ZP-2022-03-21_simulated_data.ipynb``
       creates ``sc_simu_processed.h5ad``, ``st_simu_processed.h5ad``.
 
-- Path to data: ``/lustre/groups/ml01/workspace/giovanni.palla/moscot_benchmarks/simulated_data/``
-    - sc: ``sc_simu_processed.h5ad``
-    - st: ``st_simu_processed.h5ad``
+- Path to data:
+    - sc: ``/lustre/groups/ml01/workspace/giovanni.palla/moscot_benchmarks/simulated_data/sc_simu_processed.h5ad``
+    - st: ``/lustre/groups/ml01/workspace/giovanni.palla/moscot_benchmarks/simulated_data/st_simu_processed.h5ad``
 
 
 Alignment
