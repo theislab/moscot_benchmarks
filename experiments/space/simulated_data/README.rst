@@ -8,12 +8,17 @@ Mapping
 
 Deconvolution
 -------------
-- Code: 
-1. ``make_dataset.py`` 
-      creates ``sc_simu.h5ad``, ``st_simu.h5ad`` (uses data in [/input_data](https://github.com/theislab/moscot_benchmarks/tree/space/simulated_data/experiments/space/simulated_data/input_data))
+- Code:
+
+1. ``make_dataset.py``
+      creates ``sc_simu.h5ad``, ``st_simu.h5ad``.
+
 2. ``ZP-2022-03-21_simulated_data.ipynb``
-      creates ``sc_simu_processed.h5ad``, ``st_simu_processed.h5ad``
-- Path to data: ``/path/to/data``
+      creates ``sc_simu_processed.h5ad``, ``st_simu_processed.h5ad``.
+
+- Path to data: ``/lustre/groups/ml01/workspace/giovanni.palla/moscot_benchmarks/simulated_data/``
+    - sc: ``sc_simu_processed.h5ad``
+    - st: ``st_simu_processed.h5ad``
 
 
 Alignment
