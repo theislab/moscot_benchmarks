@@ -99,7 +99,7 @@ def _benchmark_moscot(
     if rank is None:
         solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations)
     else:
-        solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations, rank=rank, gamma=gamma)
+        solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations, rank=rank, gamma=gamma, seed=seed)
 
     tp = TemporalProblem(adata, solver=solver)
     tp.prepare(key, subset=[(key_value_1, key_value_2)], policy="sequential", callback_kwargs={"n_comps": local_pca})
