@@ -130,3 +130,6 @@ dmypy.json
 
 # vscode
 .vscode
+
+# log files
+experiments/time/simulated_data/logs/*

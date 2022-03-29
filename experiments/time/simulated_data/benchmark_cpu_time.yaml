@@ -1,8 +1,8 @@
 seml:
-    executable: moscot_benchmarks/time/benchmark.py # relative path to the script that contains the experiment
+    executable: ../benchmark.py  # relative path to the script that contains the experiment
     conda_environment: moscot_with_cupti_cpu_new
     name: tedsim_cpu_time
-    output_dir: seml_results/tedsim_cpu_time # this directory must exist already
+    output_dir: logs/tedsim_cpu_time # this directory must exist already
 
 slurm: #TODO: SPECIFY
     sbatch_options_template: CPU
