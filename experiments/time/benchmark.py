@@ -1,18 +1,18 @@
+from pathlib import Path
 import sys
-sys.path.insert(0, "../../../moscot_benchmarks")
-import os
-print(os.getcwd())
+
+root = Path(__file__).parent.parent.parent.absolute()
+
+sys.path.insert(0, str(root / "moscot_benchmarks"))
 from typing import Any, Tuple, Union, Literal, Callable, Optional
-from moscot_benchmarks.utils import benchmark_memory, benchmark_time
+
+from utils import benchmark_time, benchmark_memory
 from sacred import Experiment
 from scipy.stats import entropy
 from scipy.sparse import csr_matrix
 import seml
-
 import numpy as np
-
 from anndata import AnnData
-
 
 ex = Experiment()
 seml.setup_logger(ex)
@@ -41,7 +41,7 @@ def _benchmark_wot(
 
     config.update("jax_enable_x64", True)  # need this for "distance_between_pushed_masses"
 
-    from ...moscot_benchmarks.time._utils import distance_between_pushed_masses
+    from time_utils import distance_between_pushed_masses
 
     ot_model = wot.ot.OTModel(
         adata,
@@ -93,8 +93,7 @@ def _benchmark_moscot(
 
     from moscot.backends.ott import SinkhornSolver
     from moscot.problems.time._lineage import TemporalProblem
-
-    from ...moscot_benchmarks.time._utils import distance_between_pushed_masses
+    from time_utils import distance_between_pushed_masses
 
     if rank is None:
         solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations)
@@ -213,7 +212,6 @@ def benchmark(
             lambda_2=lambda_2,
             threshold=threshold,
             max_iterations=max_iterations,
-            local_pca=local_pca,
             n_val_samples=n_val_samples,
         )
     elif model == "moscot":
@@ -234,7 +232,6 @@ def benchmark(
             lambda_2=lambda_2,
             threshold=threshold,
             max_iterations=max_iterations,
-            local_pca=local_pca,
             rank=rank,
             online=online,
             seed=seed,
