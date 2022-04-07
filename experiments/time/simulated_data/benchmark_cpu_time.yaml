@@ -1,8 +1,9 @@
 seml:
-    executable: ../benchmark.py  # relative path to the script that contains the experiment
+    executable: experiments/time/benchmark.py  # relative path to the script that contains the experiment
+    project_root_dir: ../../..
     conda_environment: moscot_with_cupti_cpu_new
     name: tedsim_cpu_time
-    output_dir: logs/tedsim_cpu_time # this directory must exist already
+    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_time # this directory must exist already
 
 slurm: #TODO: SPECIFY
     sbatch_options_template: CPU
@@ -18,21 +19,21 @@ fixed:
     threshold: 1e-3
     max_iterations: 1e6
     local_pca: 30
-    key_true_coupling: true_coupling #EXAMPLE
     seed: 1234
+    key: 'count_depth'
 
 
 grid:
     run:
         type: range
         min: 0
-        max: 5
+        max: 1
         step: 1
     dirs:
         type: choice
         options:
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/256_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad]
-WOT: #TODO: check this works for SEML, following Jan's example
+        -   ["/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/256_adata.h5ad","/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad"]
+WOT:
     fixed:
         model: WOT
 
@@ -43,13 +44,13 @@ moscot:
         online:
             type: choice
             options:
-            -   false
+            -   False
             -   1024
         jit:
             type: choice
             options:
-            -   true
-            -   false
+            -   True
+            -   False
         rank:
             type: choice
             options:
