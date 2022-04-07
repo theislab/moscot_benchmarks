@@ -1,17 +1,19 @@
 seml:
     executable: experiments/time/benchmark.py  # relative path to the script that contains the experiment
     project_root_dir: ../../..
-    conda_environment: moscot_with_cupti_gpu_fix
-    name: tedsim_gpu_time
-    output_dir: experiments/time/simulated_data/logs/tedsim_gpu_time # this directory must exist already
+    conda_environment: moscot_with_cupti_cpu_new
+    name: tedsim_cpu_time
+    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_time # this directory must exist already
 
 slurm: #TODO: SPECIFY
-    sbatch_options_template: GPU
+    sbatch_options_template: CPU
     sbatch_options:
-        partition: gpu_p  # num GPUs
+      nodelist: cpusrv[18] #,09-10,12-13,18
+      nodes: 1
+      partition: cpu_p
 
 fixed:
-    benchmark_mode: time
+    benchmark_mode: cpu_memory
     validate_ot: true
     epsilon: 5e-1
     lambda_1: 1
