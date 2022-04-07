@@ -40,7 +40,7 @@ def _benchmark_wot(
     from jax.config import config
 
     config.update("jax_enable_x64", True)  # need this for "distance_between_pushed_masses"
-
+    sys.path.insert(0, str(root / "moscot_benchmarks"))
     from time_utils import distance_between_pushed_masses
 
     ot_model = wot.ot.OTModel(
@@ -93,6 +93,7 @@ def _benchmark_moscot(
 
     from moscot.backends.ott import SinkhornSolver
     from moscot.problems.time._lineage import TemporalProblem
+    sys.path.insert(0, str(root / "moscot_benchmarks"))
     from time_utils import distance_between_pushed_masses
 
     if rank is None:
