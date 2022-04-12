@@ -1,7 +1,8 @@
 from typing import Tuple, Union, Optional
 
 from scipy.sparse import issparse, csr_matrix
-from moscot.backends.ott._output import SinkhornOutput as Output
+from moscot.backends.ott._output import SinkhornOutput, LRSinkhornOutput
+from moscot.problems.time._lineage import TemporalBaseProblem
 
 from ott.core import sinkhorn
 from ott.geometry import pointcloud
@@ -9,11 +10,13 @@ import numpy as np
 import jax.numpy as jnp
 import numpy.typing as npt
 
+Output = Union[SinkhornOutput, LRSinkhornOutput]
+
 
 def distance_between_pushed_masses(
     gex_data_source: npt.ArrayLike,
     gex_data_target: npt.ArrayLike,
-    output: Union[npt.ArrayLike, csr_matrix, Output],
+    output: Union[npt.ArrayLike, csr_matrix, TemporalBaseProblem],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     eps: float = 0.1,
     seed: Optional[int] = None,
@@ -39,7 +42,7 @@ def distance_between_pushed_masses(
 
 def _get_masses_moscot(
     i: int,
-    output: Union[npt.ArrayLike, csr_matrix, Output],
+    output: Union[npt.ArrayLike, csr_matrix, TemporalBaseProblem],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     n: int,
     m: int,
@@ -51,7 +54,7 @@ def _get_masses_moscot(
         pushed_mass_true /= pushed_mass_true.sum()
         mass = np.zeros(n, dtype="float64")
         mass[i] = 1
-        pushed_mass = output.push(mass).squeeze()
+        pushed_mass = output.solution.push(mass).squeeze()
         weight_factor = jnp.sum(pushed_mass)
         if random:
             pushed_mass = output.b[:, -1]
@@ -63,7 +66,7 @@ def _get_masses_moscot(
         pushed_mass_true /= pushed_mass_true.sum()
         mass = np.zeros(m, dtype="float64")
         mass[i] = 1
-        pushed_mass = output.pull(mass).squeeze()
+        pushed_mass = output.solution.pull(mass).squeeze()
         weight_factor = jnp.sum(pushed_mass)
         if random:
             pushed_mass = output.a[:, -1]
@@ -75,7 +78,7 @@ def _get_masses_moscot(
 
 def _get_masses_ndarray(
     i: int,
-    output: Union[npt.ArrayLike, csr_matrix, Output],
+    output: Union[npt.ArrayLike, csr_matrix],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     forward: bool,
     random: bool,
@@ -105,7 +108,7 @@ def _get_masses_ndarray(
 
 def _distance_pushed_masses(
     gex_data: npt.ArrayLike,
-    output: Union[npt.ArrayLike, csr_matrix, Output],
+    output: Union[npt.ArrayLike, csr_matrix, TemporalBaseProblem],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     forward: bool,
     eps: float = 0.5,
@@ -122,15 +125,16 @@ def _distance_pushed_masses(
     else:
         samples = rng.choice(n if forward else m, size=n_samples)
     for i in samples:
-        print(i)
         if isinstance(output, np.ndarray):
             pushed_mass_true, pushed_mass, weight_factor = _get_masses_ndarray(
                 i, output, true_coupling, forward, random
             )
-        elif isinstance(output, Output):
+        elif isinstance(output, TemporalBaseProblem):
             pushed_mass_true, pushed_mass, weight_factor = _get_masses_moscot(
                 i, output, true_coupling, n, m, forward, random
             )
+        else:
+            raise TypeError(f"Return type is {type(output)}")
         if issparse(pushed_mass_true):
             pushed_mass_true = np.squeeze(pushed_mass_true.A)
         geom = pointcloud.PointCloud(gex_data, gex_data, epsilon=eps, scale_cost="mean")

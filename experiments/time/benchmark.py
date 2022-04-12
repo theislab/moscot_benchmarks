@@ -7,12 +7,13 @@ sys.path.insert(0, str(root / "moscot_benchmarks"))
 from typing import Any, Tuple, Union, Literal, Callable, Optional
 
 from utils import benchmark_time, benchmark_memory
-from time_utils import distance_between_pushed_masses
 from sacred import Experiment
 from scipy.stats import entropy
 from scipy.sparse import csr_matrix
 import seml
+
 import numpy as np
+
 from anndata import AnnData
 
 ex = Experiment()
@@ -41,8 +42,7 @@ def _benchmark_wot(
     from jax.config import config
 
     config.update("jax_enable_x64", True)  # need this for "distance_between_pushed_masses"
-    #sys.path.insert(0, str(root / "moscot_benchmarks"))
-    #from time_utils import distance_between_pushed_masses
+    from experiments.time.time_utils import distance_between_pushed_masses
 
     ot_model = wot.ot.OTModel(
         adata,
@@ -64,8 +64,8 @@ def _benchmark_wot(
         error = distance_between_pushed_masses(
             gex_data_source, gex_data_target, ot_result.X, true_coupling, seed=seed, n_samples=n_val_samples
         )
-        return benchmark_result, error, entropy(ot_result.X.flatten())
-    return benchmark_result
+        return {"benchmark_result": benchmark_result, "error": error, "entropy": entropy(ot_result.X.flatten())}
+    return {"benchmark_result": benchmark_result}
 
 
 def _benchmark_moscot(
@@ -94,8 +94,8 @@ def _benchmark_moscot(
 
     from moscot.backends.ott import SinkhornSolver
     from moscot.problems.time._lineage import TemporalProblem
-    #sys.path.insert(0, str(root / "moscot_benchmarks"))
-    #from time_utils import distance_between_pushed_masses
+
+    from experiments.time.time_utils import distance_between_pushed_masses
 
     if rank is None:
         solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations)
@@ -117,12 +117,8 @@ def _benchmark_moscot(
     )
 
     if validate_ot:
-        gex_data_source = adata[adata.obs[key] == key_value_1].obsm[
-            "X_pca"
-        ]  # TODO: do we want to measure this in GEX or PCA space
-        gex_data_target = adata[adata.obs[key] == key_value_2].obsm[
-            "X_pca"
-        ]  # TODO: do we want to measure this in GEX or PCA space
+        gex_data_source = adata[adata.obs[key] == key_value_1].obsm["X_pca"]
+        gex_data_target = adata[adata.obs[key] == key_value_2].obsm["X_pca"]
         error = distance_between_pushed_masses(
             gex_data_source,
             gex_data_target,
@@ -131,8 +127,12 @@ def _benchmark_moscot(
             seed=seed,
             n_samples=n_val_samples,
         )
-        return benchmark_result, error, entropy(ot_result[key_value_1, key_value_2].solution.transport_matrix.flatten())
-    return benchmark_result
+        return {
+            "benchmark_result": benchmark_result,
+            "error": np.array(error),
+            "entropy": np.array(entropy(ot_result[key_value_1, key_value_2].solution.transport_matrix.flatten())),
+        }
+    return {"benchmark_result": benchmark_result}
 
 
 @ex.post_run_hook

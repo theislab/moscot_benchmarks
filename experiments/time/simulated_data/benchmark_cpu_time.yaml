@@ -1,45 +1,67 @@
 seml:
     executable: experiments/time/benchmark.py  # relative path to the script that contains the experiment
     project_root_dir: ../../..
-    conda_environment: moscot_with_cupti_cpu_new
+    conda_environment: moscot_benchmarking_time
     name: tedsim_cpu_time
     output_dir: experiments/time/simulated_data/logs/tedsim_cpu_time # this directory must exist already
 
 slurm: #TODO: SPECIFY
     sbatch_options_template: CPU
     sbatch_options:
-      nodelist: cpusrv[18] #,09-10,12-13,18
-      nodes: 1
-      partition: cpu_p
+        nodelist: cpusrv[18] #,09-10,12-13,18
+        nodes: 1
+        partition: cpu_p
 
 fixed:
     benchmark_mode: time
     validate_ot: true
     epsilon: 5e-1
-    lambda_1: 1
+    lambda_1: 2
     lambda_2: 10
-    threshold: 1e-3
+    threshold: 1e-6
     max_iterations: 1e6
     local_pca: 30
     seed: 1234
-    key: "node_depth"
+    key: node_depth
+    n_val_samples: 50
 
 
 grid:
     run:
         type: range
         min: 0
-        max: 1
+        max: 5
         step: 1
     dirs:
         type: choice
         options:
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/256_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_true_coupling.h5ad]
 WOT:
     fixed:
         model: WOT
 
 moscot:
+    fixed:
+        model: moscot
+        rank: None
+        gamma: None
+    grid:
+        online:
+            type: choice
+            options:
+            -   false
+            -   1024
+        jit:
+            type: choice
+            options:
+            -   true
+            -   false
+
+moscot_lr:
     fixed:
         model: moscot
     grid:
@@ -56,17 +78,16 @@ moscot:
         rank:
             type: choice
             options:
-            -   None
             -   5
-            #-   10
-            #-   50
-            #-   200
-            #-   1000
-        gamma: #make conditional on low rank = True
+            -   10
+            -   50
+            -   200
+            -   1000
+        gamma:
             type: choice
             options:
             -   0.01
-            #-   0.1
-            #-   1
-            #-   10
-            #-   100
+            -   0.1
+            -   1
+            -   10
+            -   100

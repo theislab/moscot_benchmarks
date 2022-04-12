@@ -20,7 +20,7 @@ fixed:
     max_iterations: 1e6
     local_pca: 30
     seed: 1234
-    key: "node_depth"
+    key: node_depth
 
 
 grid:
