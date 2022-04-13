@@ -55,11 +55,6 @@ moscot:
             options:
             -   false
             -   1024
-        jit:
-            type: choice
-            options:
-            -   true
-            -   false
 
 moscot_lr:
     fixed:
@@ -70,11 +65,6 @@ moscot_lr:
             options:
             -   false
             -   1024
-        jit:
-            type: choice
-            options:
-            -   true
-            -   false
         rank:
             type: choice
             options:

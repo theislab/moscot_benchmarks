@@ -5,10 +5,12 @@ seml:
     name: tedsim_gpu_time
     output_dir: experiments/time/simulated_data/logs/tedsim_gpu_time # this directory must exist already
 
-slurm: #TODO: SPECIFY
+slurm:
+    experiments_per_job: 1
     sbatch_options_template: GPU
     sbatch_options:
-        partition: gpu_p  # num GPUs
+      gres: gpu:1       # num GPUs
+      nodelist: supergpu05
 
 fixed:
     benchmark_mode: time
@@ -52,11 +54,6 @@ moscot:
             options:
             -   false
             -   1024
-        jit:
-            type: choice
-            options:
-            -   true
-            -   false
 
 moscot_lr:
     fixed:
@@ -67,11 +64,6 @@ moscot_lr:
             options:
             -   false
             -   1024
-        jit:
-            type: choice
-            options:
-            -   true
-            -   false
         rank:
             type: choice
             options:
