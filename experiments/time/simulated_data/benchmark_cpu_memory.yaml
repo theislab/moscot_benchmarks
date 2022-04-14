@@ -3,14 +3,16 @@ seml:
     project_root_dir: ../../..
     conda_environment: moscot_benchmarking_time
     name: tedsim_cpu_memory
-    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_cpu_memory # this directory must exist already
+    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_memory # this directory must exist already
 
-slurm: #TODO: SPECIFY
+slurm:
+    #experiments_per_job: 1
+    #max_simultaneous_jobs: 20
     sbatch_options_template: CPU
     sbatch_options:
-        nodelist: cpusrv[18] #,09-10,12-13,18
-        nodes: 1
-        partition: cpu_p
+      #exclude: ibis216-010-0[35,37,64], icb-rsrv0[6,8], ibis-ceph-0[02-05,08-16], ibis-ceph-0[17-19]
+      constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
+      partition: cpu_p
 
 fixed:
     benchmark_mode: cpu_memory
