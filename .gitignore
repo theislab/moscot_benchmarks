@@ -130,4 +130,12 @@ dmypy.json
 
 # vscode
 .vscode
-logs
+
+# log files
+experiments/time/simulated_data/logs/*
+
+# files
+*.png
+*.h5ad
+*.npy
+*.npz

@@ -1,27 +1,29 @@
 seml:
-    executable: moscot_benchmarks/time/benchmark.py # relative path to the script that contains the experiment
-    conda_environment: moscot_with_cupti_cpu_new
+    executable: experiments/time/benchmark.py  # relative path to the script that contains the experiment
+    project_root_dir: ../../..
+    conda_environment: moscot_benchmarking_time
     name: tedsim_cpu_memory
-    output_dir: seml_results/tedsim_cpu_memory # this directory must exist already
+    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_cpu_memory # this directory must exist already
 
 slurm: #TODO: SPECIFY
     sbatch_options_template: CPU
     sbatch_options:
-        partition: cpu_p  # num GPUs
+        nodelist: cpusrv[18] #,09-10,12-13,18
+        nodes: 1
+        partition: cpu_p
 
 fixed:
     benchmark_mode: cpu_memory
-    validate_ot: True
-    epsilon: 1e-2
-    lambda_1: 1
-    lambda_2: 50
-    threshold: 1e-3
+    validate_ot: true
+    epsilon: 5e-1
+    lambda_1: 2
+    lambda_2: 10
+    threshold: 1e-6
     max_iterations: 1e6
     local_pca: 30
-    key_value_1: 0 #EXAMPLE
-    key_value_2: 1 #EXAMPLE
-    key_true_coupling: true_coupling #EXAMPLE
     seed: 1234
+    key: node_depth
+    n_val_samples: 50
 
 
 grid:
@@ -30,42 +32,48 @@ grid:
         min: 0
         max: 5
         step: 1
-    anndata_dir:
+    dirs:
         type: choice
         options:
-        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_8192.h5ad
-        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_16384.h5ad
-        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_32768.h5ad
-        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_65536.h5ad
-        -   /home/icb/dominik.klein/data/adatas_tedsim/adata_tedsim_131072.h5ad
-WOT: #TODO: check this works for SEML, following Jan's example
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_true_coupling.h5ad]
+WOT:
     fixed:
         model: WOT
 
 moscot:
     fixed:
         model: moscot
+        rank: None
+        gamma: None
     grid:
         online:
             type: choice
             options:
-            -   False
+            -   false
             -   1024
-        jit:
+
+moscot_lr:
+    fixed:
+        model: moscot
+    grid:
+        online:
             type: choice
             options:
-            -   true
             -   false
+            -   1024
         rank:
             type: choice
             options:
-            -   None
             -   5
             -   10
             -   50
             -   200
             -   1000
-        gamma: #make conditional on low rank = True
+        gamma:
             type: choice
             options:
             -   0.01
