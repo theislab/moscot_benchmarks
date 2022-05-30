@@ -1,8 +1,8 @@
 from typing import Tuple, Union, Optional
 
 from scipy.sparse import issparse, csr_matrix
-from moscot.backends.ott._output import SinkhornOutput, LRSinkhornOutput
-from moscot.problems.time._lineage import TemporalBaseProblem
+from moscot.backends.ott import SinkhornOutput, LRSinkhornOutput
+from moscot.problems.mixins import BirthDeathBaseProblem
 
 from ott.core import sinkhorn
 from ott.geometry import pointcloud
@@ -16,7 +16,7 @@ Output = Union[SinkhornOutput, LRSinkhornOutput]
 def distance_between_pushed_masses(
     gex_data_source: npt.ArrayLike,
     gex_data_target: npt.ArrayLike,
-    output: Union[npt.ArrayLike, csr_matrix, TemporalBaseProblem],
+    output: Union[npt.ArrayLike, csr_matrix, BirthDeathBaseProblem],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     eps: float = 0.1,
     seed: Optional[int] = None,
@@ -42,7 +42,7 @@ def distance_between_pushed_masses(
 
 def _get_masses_moscot(
     i: int,
-    output: Union[npt.ArrayLike, csr_matrix, TemporalBaseProblem],
+    output: Union[npt.ArrayLike, csr_matrix, BirthDeathBaseProblem],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     n: int,
     m: int,
@@ -108,7 +108,7 @@ def _get_masses_ndarray(
 
 def _distance_pushed_masses(
     gex_data: npt.ArrayLike,
-    output: Union[npt.ArrayLike, csr_matrix, TemporalBaseProblem],
+    output: Union[npt.ArrayLike, csr_matrix, BirthDeathBaseProblem],
     true_coupling: Union[npt.ArrayLike, csr_matrix],
     forward: bool,
     eps: float = 0.5,
@@ -129,7 +129,7 @@ def _distance_pushed_masses(
             pushed_mass_true, pushed_mass, weight_factor = _get_masses_ndarray(
                 i, output, true_coupling, forward, random
             )
-        elif isinstance(output, TemporalBaseProblem):
+        elif isinstance(output, BirthDeathBaseProblem):
             pushed_mass_true, pushed_mass, weight_factor = _get_masses_moscot(
                 i, output, true_coupling, n, m, forward, random
             )

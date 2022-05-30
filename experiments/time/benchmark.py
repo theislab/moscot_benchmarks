@@ -92,19 +92,18 @@ def _benchmark_moscot(
 
     config.update("jax_enable_x64", True)
 
-    from moscot.backends.ott import SinkhornSolver
-    from moscot.problems.time._lineage import TemporalProblem
+    from moscot.problems.time import TemporalProblem
 
     from experiments.time.time_utils import distance_between_pushed_masses
 
     if rank is None:
-        solver = SinkhornSolver(jit=jit, threshold=threshold, max_iterations=max_iterations)
+        kwargs = {"jit":jit, "threshold":threshold, "max_iterations":max_iterations}
     else:
-        solver = SinkhornSolver(
-            jit=jit, threshold=threshold, max_iterations=max_iterations, rank=rank, gamma=gamma
-        )  # , seed=seed)
+        kwargs = {
+            "jit":jit, "threshold":1e-3, "max_iterations":max_iterations, "rank":rank, "gamma":gamma, "rng_key":seed
+        }
 
-    tp = TemporalProblem(adata, solver=solver)
+    tp = TemporalProblem(adata)
     tp.prepare(key, subset=[(key_value_1, key_value_2)], policy="sequential", joint_attr="X_pca")
 
     benchmarked_f = benchmark_f(tp.solve)
@@ -114,6 +113,7 @@ def _benchmark_moscot(
         tau_a=lambda_1 / (lambda_1 + epsilon),
         tau_b=lambda_2 / (lambda_2 + epsilon),
         online=online,
+        **kwargs
     )
 
     if validate_ot:
