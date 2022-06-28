@@ -11,7 +11,7 @@ slurm: #TODO: SPECIFY
     # gres: gpu:1       # num GPUs
     # mem: 90G # memory
         cpus-per-task: 3 # num cores
-        time: 23:00 # max time, D-HH:MM
+        time: 36:00 # max time, D-HH:MM
         constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
 
 fixed:
@@ -42,6 +42,10 @@ grid:
         -   [/home/icb/dominik.klein/data/Sliced_adata/4096_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/4096_true_coupling.h5ad]
         -   [/home/icb/dominik.klein/data/Sliced_adata/8192_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/8192_true_coupling.h5ad]
         -   [/home/icb/dominik.klein/data/Sliced_adata/16384_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/16384_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/32768_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/32768_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/65536_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/65536_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/131072_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/131072_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/262144_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/262144_true_coupling.h5ad]
 WOT:
     fixed:
         model: WOT
