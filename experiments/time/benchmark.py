@@ -64,7 +64,7 @@ def _benchmark_wot(
         error = distance_between_pushed_masses(
             gex_data_source, gex_data_target, ot_result.X, true_coupling, seed=seed, n_samples=n_val_samples
         )
-        return {"benchmark_result": benchmark_result, "error": error, "entropy": entropy(ot_result.X.flatten())}
+        return {"benchmark_result": benchmark_result, "error": error, "entropy": entropy(ot_result.X.flatten()), "converged": 2}
     return {"benchmark_result": benchmark_result}
 
 
@@ -131,6 +131,7 @@ def _benchmark_moscot(
             "benchmark_result": benchmark_result,
             "error": np.array(error),
             "entropy": np.array(entropy(ot_result[key_value_1, key_value_2].solution.transport_matrix.flatten())),
+            "converged": ot_result[key_value_1, key_value_2].solution.converged
         }
     return {"benchmark_result": benchmark_result}
 
