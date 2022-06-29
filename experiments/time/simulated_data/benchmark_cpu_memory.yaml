@@ -3,14 +3,18 @@ seml:
     project_root_dir: ../../..
     conda_environment: moscot_benchmarking_time
     name: tedsim_cpu_memory
-    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_cpu_memory # this directory must exist already
+    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_memory # this directory must exist already
 
-slurm: #TODO: SPECIFY
+slurm:
+    #experiments_per_job: 1
+    #max_simultaneous_jobs: 20
     sbatch_options_template: CPU
     sbatch_options:
-        nodelist: cpusrv[18] #,09-10,12-13,18
-        nodes: 1
-        partition: cpu_p
+    # gres: gpu:1       # num GPUs
+    # mem: 90G # memory
+        cpus-per-task: 3 # num cores
+        time: 23:00 # max time, D-HH:MM
+        constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
 
 fixed:
     benchmark_mode: cpu_memory
@@ -35,11 +39,11 @@ grid:
     dirs:
         type: choice
         options:
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/1024_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/1024_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/2048_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/2048_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/4096_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/4096_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/8192_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/8192_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/16384_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/16384_true_coupling.h5ad]
 WOT:
     fixed:
         model: WOT

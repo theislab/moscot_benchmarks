@@ -34,11 +34,11 @@ grid:
     dirs:
         type: choice
         options:
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/1024_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/2048_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/4096_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/8192_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_adata.h5ad, /home/icb/dominik.klein/data/adatas_tedsim_benchmark/adatas/16384_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/1024_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/1024_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/2048_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/2048_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/4096_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/4096_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/8192_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/8192_true_coupling.h5ad]
+        -   [/home/icb/dominik.klein/data/Sliced_adata/16384_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/16384_true_coupling.h5ad]
 WOT:
     fixed:
         model: WOT
