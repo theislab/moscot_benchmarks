@@ -15,7 +15,7 @@ slurm: #TODO: SPECIFY
         constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
 
 fixed:
-    max_iterations: 1e6
+    max_iterations: 1000
     seed: 442
     path_data: /lustre/groups/ml01/workspace/moscot_paper/mapping
     adata_sc_file: adata_sc_processed.h5ad
@@ -27,10 +27,10 @@ grid:
         type: choice
         # options: ["time", "cpu_memory"]
         options: [time]
-    size:
+    fraction:
         type: choice
-        # options: [1000, 2000, 5000, 10000]
-        options: [1000]
+        # options: [0.1, 0.2, 0.5, 1]
+        options: [0.05]
     epsilon:
         type: choice
         # options: [10, 1, 1e-2, 1e-3]
@@ -38,7 +38,7 @@ grid:
     rank:
         type: choice
         # options: [500, 100, 50]
-        options: [50]
+        options: [500]
     jit:
         type: choice
         # options: [True, False]

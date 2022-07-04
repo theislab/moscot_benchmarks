@@ -20,6 +20,7 @@ def _benchmark_moscot(
     adata_spatial: AnnData,
     var_names: List[str],
     benchmark_f: Callable,
+    benchmark_mode: str,
     epsilon: float,
     alpha: float,
     rank: int,
@@ -30,6 +31,7 @@ def _benchmark_moscot(
     from jax.config import config
 
     config.update("jax_enable_x64", True)
+    config.update("jax_platform_name", "cpu")
     from moscot.problems.space import MappingProblem
 
     mp = MappingProblem(adata_sc, adata_spatial).prepare(
@@ -49,7 +51,14 @@ def _benchmark_moscot(
         gamma=gamma,
     )
 
-    return {"benchmark_result": benchmark_result}
+    results = {
+        "benchmark_result": benchmark_result,
+        "benchmark_mode": benchmark_mode,
+        "adata_sc_size": adata_sc.shape[0],
+        "adata_spatial_size": adata_spatial.shape[0],
+    }
+
+    return results
 
 
 @ex.post_run_hook
@@ -72,7 +81,7 @@ def benchmark(
     adata_sc_file: str,
     adata_spatial_file: str,
     adata_cite_file: str,
-    size: int,
+    fraction: float,
     epsilon: float,
     alpha: float,
     max_iterations: int,
@@ -97,8 +106,12 @@ def benchmark(
     adata_spatial = sc.read(path_data / adata_spatial_file)
 
     rng = np.random.default_rng(seed)
-    idx_sc = rng.choice(adata_sc.obs_names, size=size)
-    idx_spatial = rng.choice(adata_spatial.obs_names, size=size)
+
+    n_sc = round(adata_sc.shape[0] * fraction)
+    n_spatial = round(adata_spatial.shape[0] * fraction)
+
+    idx_sc = rng.choice(adata_sc.obs_names, size=n_sc)
+    idx_spatial = rng.choice(adata_spatial.obs_names, size=n_spatial)
 
     adata_sc = adata_sc[idx_sc].copy()
     adata_spatial = adata_spatial[idx_spatial].copy()
@@ -112,7 +125,7 @@ def benchmark(
         adata_spatial=adata_spatial,
         var_names=var_names,
         benchmark_f=benchmark_f,
-        size=size,
+        benchmark_mode=benchmark_mode,
         epsilon=epsilon,
         alpha=alpha,
         rank=rank,
