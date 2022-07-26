@@ -11,8 +11,8 @@ slurm: #TODO: SPECIFY
         # gres: gpu:1       # num GPUs
         mem: 90G # memory
         cpus-per-task: 6 # num cores
-        time: 04:00 # max time, D-HH:MM
-        constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
+        time: 10:00 # max time, D-HH:MM
+        exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
 
 fixed:
     max_iterations: 1000
