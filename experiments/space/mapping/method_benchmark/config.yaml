@@ -1,0 +1,52 @@
+seml:
+    executable: ./experiment.py # relative path to the script that contains the experiment
+    project_root_dir: .
+    conda_environment: moscot
+    name: fgw-mapping
+    output_dir: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping-fgw
+
+slurm: #TODO: SPECIFY
+    sbatch_options_template: GPU
+    sbatch_options:
+        gres: gpu:1 # num GPUs
+        mem: 90G # memory
+        cpus-per-task: 6 # num cores
+        time: 10:00 # max time, D-HH:MM
+        # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
+
+fixed:
+    seed: 442
+    path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data
+    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping_methods
+
+grid:
+    dataset:
+        type: choice
+        options: [1]
+    split:
+        type: choice
+        options: [1]
+
+moscot:
+    fixed:
+        method: moscot
+    grid:
+        params:
+            epsilon:
+                type: choice
+                options: [1e-2]
+            alpha:
+                type: choice
+                options: [0.1]
+
+tangram:
+    fixed:
+        method: tangram
+    grid:
+        params:
+            epsilon:
+                type: choice
+                options: [1e-2]
+            alpha:
+                type: choice
+                options: [0.1]
