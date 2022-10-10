@@ -2,6 +2,7 @@
 
 from math import cos, sin
 import sys
+import pathlib
 
 from sklearn.preprocessing import StandardScaler
 import torch
@@ -17,6 +18,8 @@ import anndata as ad
 sys.path.append("/home/icb/giovanni.palla/code/spatial-alignment")
 sys.path.append("/home/icb/giovanni.palla/code/spatial-alignment/data")
 from data.simulated.generate_twod_data import generate_twod_data  # noqa: E402
+
+ROOT_SAVE = pathlib.Path("/lustre/groups/ml01/workspace/moscot_paper/alignment/cpumem_bench")
 
 
 def generate_data(
