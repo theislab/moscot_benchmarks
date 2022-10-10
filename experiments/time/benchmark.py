@@ -6,7 +6,7 @@ root = Path(__file__).parent.parent.parent.absolute()
 sys.path.insert(0, str(root / "moscot_benchmarks"))
 from typing import Any, Tuple, Union, Literal, Callable, Optional
 
-from utils import benchmark_time, benchmark_memory
+from utils import benchmark_time, benchmark_memory, prepare_data
 from sacred import Experiment
 from scipy.stats import entropy
 from scipy.sparse import csr_matrix
