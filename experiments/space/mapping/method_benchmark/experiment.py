@@ -165,8 +165,11 @@ def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnD
     rng = np.random.default_rng(seed)
     if "highly_variable" in adata_sp.var.columns:
         adata_sp = adata_sp[:, adata_sp.var.highly_variable].copy()
+        n_genes = 100
+    else:
+        n_genes = 10
 
-    test_var = rng.choice(adata_sp, 100, replace=False).tolist()
+    test_var = rng.choice(adata_sp, n_genes, replace=False).tolist()
 
     adata_sp_a = sc.pp.subsample(adata_sp, fraction=0.5, copy=True, seed=seed)
     adata_sp_b = adata_sp[~np.in1d(adata_sp.obs_names, adata_sp_a.obs_names)]
