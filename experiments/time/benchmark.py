@@ -6,7 +6,8 @@ root = Path(__file__).parent.parent.parent.absolute()
 sys.path.insert(0, str(root / "moscot_benchmarks"))
 from typing import Any, Tuple, Union, Literal, Callable, Optional
 
-from utils import benchmark_time, benchmark_memory, prepare_data
+from time_utils import prepare_data
+from utils import benchmark_time, benchmark_memory
 from sacred import Experiment
 from scipy.stats import entropy
 from scipy.sparse import csr_matrix
@@ -26,7 +27,6 @@ def _benchmark_wot(
     validate_ot: bool,
     adata: AnnData,
     true_coupling: Optional[Union[np.ndarray, csr_matrix]],
-    key: str,
     key_value_1: Any,
     key_value_2: Any,
     epsilon: float,
@@ -46,7 +46,7 @@ def _benchmark_wot(
 
     ot_model = wot.ot.OTModel(
         adata,
-        day_field=key,
+        day_field="day",
         epsilon=epsilon,
         lambda1=lambda_1,
         lambda2=lambda_2,
@@ -59,8 +59,8 @@ def _benchmark_wot(
     benchmark_result, ot_result = benchmarked_f(key_value_1, key_value_2, cost_matrix=C)
 
     if validate_ot:
-        gex_data_source = adata[adata.obs[key] == key_value_1].obsm["X_pca"]
-        gex_data_target = adata[adata.obs[key] == key_value_2].obsm["X_pca"]
+        gex_data_source = adata[adata.obs["day"] == key_value_1].obsm["X_pca"]
+        gex_data_target = adata[adata.obs["day"] == key_value_2].obsm["X_pca"]
         error = distance_between_pushed_masses(
             gex_data_source, gex_data_target, ot_result.X, true_coupling, seed=seed, n_samples=n_val_samples
         )
@@ -73,7 +73,6 @@ def _benchmark_moscot(
     validate_ot: bool,
     adata: AnnData,
     true_coupling: Optional[Union[np.ndarray, csr_matrix]],
-    key: str,
     key_value_1: Any,
     key_value_2: Any,
     epsilon: float,
@@ -104,7 +103,7 @@ def _benchmark_moscot(
         }
 
     tp = TemporalProblem(adata)
-    tp.prepare(key, subset=[(key_value_1, key_value_2)], policy="sequential", joint_attr="X_pca")
+    tp.prepare("day", subset=[(key_value_1, key_value_2)], policy="sequential", joint_attr="X_pca")
 
     benchmarked_f = benchmark_f(tp.solve)
     benchmark_result, ot_result = benchmarked_f(
@@ -117,8 +116,8 @@ def _benchmark_moscot(
     )
 
     if validate_ot:
-        gex_data_source = adata[adata.obs[key] == key_value_1].obsm["X_pca"]
-        gex_data_target = adata[adata.obs[key] == key_value_2].obsm["X_pca"]
+        gex_data_source = adata[adata.obs["day"] == key_value_1].obsm["X_pca"]
+        gex_data_target = adata[adata.obs["day"] == key_value_2].obsm["X_pca"]
         error = distance_between_pushed_masses(
             gex_data_source,
             gex_data_target,
@@ -156,13 +155,11 @@ def benchmark(
     validate_ot: bool,
     model: Literal["moscot", "WOT"],
     fpath: str,
-    key: str,
     epsilon: float,
     lambda_1: float,
     lambda_2: float,
     threshold: float,
     max_iterations: int,
-    local_pca: int,
     rank: Optional[int] = None,
     online: Optional[int] = None,
     seed: Optional[int] = None,
@@ -173,8 +170,6 @@ def benchmark(
     from sklearn.metrics import pairwise_distances
     import anndata
     from scipy.sparse import dok_matrix, csr_matrix
-
-    from experiments.time.time_utils import get_ground_truth
 
     import scanpy as sc
 
@@ -191,18 +186,15 @@ def benchmark(
 
     adata_early = anndata.AnnData(dok_matrix((rna_arrays["early"].shape[0], 1)))
     adata_late = anndata.AnnData(dok_matrix((rna_arrays["late"].shape[0], 1)))  
-    adata_early.obs["time"] = 0
+    adata_early.obs["day"] = 0
     adata_early.obsm["X_pca"] = rna_arrays["early"]
-    adata_late.obs["time"] = 1
+    adata_late.obs["day"] = 1
     adata_late.obsm["X_pca"] = rna_arrays["late"]
     adata_concat = anndata.concat([adata_early, adata_late])
     
     if model == "WOT":
         C = pairwise_distances(adata_early.obsm["X_pca"], adata_late.obsm["X_pca"], metric="sqeuclidean")
         C /= C.mean()
-        del adata_1
-        del adata_2
-        del adata
 
         return _benchmark_wot(
             C=C,
@@ -210,7 +202,6 @@ def benchmark(
             validate_ot=validate_ot,
             adata=adata_concat,
             true_coupling=true_coupling,
-            key=key,
             key_value_1=0,
             key_value_2=1,
             epsilon=epsilon,
@@ -230,7 +221,6 @@ def benchmark(
             validate_ot=validate_ot,
             adata=adata_concat,
             true_coupling=true_coupling,
-            key=key,
             key_value_1=0,
             key_value_2=1,
             epsilon=epsilon,
