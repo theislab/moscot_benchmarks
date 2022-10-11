@@ -14,3 +14,4 @@ pot>=0.8.0
 seml>=0.3
 typing_extensions
 biopython
+scipy

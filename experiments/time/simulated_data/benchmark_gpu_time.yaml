@@ -1,7 +1,7 @@
 seml:
     executable: experiments/time/benchmark.py  # relative path to the script that contains the experiment
     project_root_dir: ../../..
-    conda_environment: moscot_benchmarking_gpu
+    conda_environment: jax_gpu3
     name: tedsim_gpu_time
     output_dir: experiments/time/simulated_data/logs/tedsim_gpu_time # this directory must exist already
 
@@ -34,15 +34,14 @@ grid:
     dirs:
         type: choice
         options:
-        -   [/home/icb/dominik.klein/data/Sliced_adata/1024_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/1024_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/2048_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/2048_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/4096_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/4096_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/8192_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/8192_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/16384_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/16384_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/32768_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/32768_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/65536_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/65536_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/131072_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/131072_true_coupling.h5ad]
-        -   [/home/icb/dominik.klein/data/Sliced_adata/262144_adata.h5ad, /home/icb/dominik.klein/data/Sliced_adata/262144_true_coupling.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_1024.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_2048.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_4096.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_8192.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_16384.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_32768.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_65536.h5ad]
+        -   [/lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_131072.h5ad]
 WOT:
     fixed:
         model: WOT
