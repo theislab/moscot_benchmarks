@@ -155,7 +155,7 @@ def benchmark(
     benchmark_mode: Literal["time", "cpu_memory"],
     validate_ot: bool,
     model: Literal["moscot", "WOT"],
-    dirs: Tuple[str, str],
+    fpath: str,
     key: str,
     epsilon: float,
     lambda_1: float,
@@ -171,6 +171,10 @@ def benchmark(
     n_val_samples: Optional[int] = None,
 ):
     from sklearn.metrics import pairwise_distances
+    import anndata
+    from scipy.sparse import dok_matrix, csr_matrix
+
+    from experiments.time.time_utils import get_ground_truth
 
     import scanpy as sc
 
@@ -181,21 +185,20 @@ def benchmark(
     else:
         raise NotImplementedError
 
-    anndata_dir, true_coupling_dir = dirs
-    adata = sc.read_h5ad(anndata_dir)
-    true_coupling = sc.read_h5ad(true_coupling_dir).X
-    key_value_2 = adata.obs[key].max()
-    key_value_1 = key_value_2 - 1
-    adata = adata[adata.obs[key].isin((key_value_1, key_value_2))].copy()
 
-    adata_1 = adata[adata.obs[key] == key_value_1].copy()
-    adata_2 = adata[adata.obs[key] == key_value_2].copy()
-    sc.tl.pca(adata_1, n_comps=local_pca)
-    sc.tl.pca(adata_2, n_comps=local_pca)
-    bdata = adata_1.concatenate(adata_2)
+    adata = sc.read_h5ad(fpath)
+    true_coupling, rna_arrays, _ = prepare_data(adata, np.log2(len(adata)+2)-3)
 
+    adata_early = anndata.AnnData(dok_matrix((rna_arrays["early"].shape[0], 1)))
+    adata_late = anndata.AnnData(dok_matrix((rna_arrays["late"].shape[0], 1)))  
+    adata_early.obs["time"] = 0
+    adata_early.obsm["X_pca"] = rna_arrays["early"]
+    adata_late.obs["time"] = 1
+    adata_late.obsm["X_pca"] = rna_arrays["late"]
+    adata_concat = anndata.concat([adata_early, adata_late])
+    
     if model == "WOT":
-        C = pairwise_distances(adata_1.obsm["X_pca"], adata_2.obsm["X_pca"], metric="sqeuclidean")
+        C = pairwise_distances(adata_early.obsm["X_pca"], adata_late.obsm["X_pca"], metric="sqeuclidean")
         C /= C.mean()
         del adata_1
         del adata_2
@@ -205,11 +208,11 @@ def benchmark(
             C=C,
             benchmark_f=benchmark_f,
             validate_ot=validate_ot,
-            adata=bdata,
+            adata=adata_concat,
             true_coupling=true_coupling,
             key=key,
-            key_value_1=key_value_1,
-            key_value_2=key_value_2,
+            key_value_1=0,
+            key_value_2=1,
             epsilon=epsilon,
             lambda_1=lambda_1,
             lambda_2=lambda_2,
@@ -225,11 +228,11 @@ def benchmark(
         return _benchmark_moscot(
             benchmark_f=benchmark_f,
             validate_ot=validate_ot,
-            adata=bdata,
+            adata=adata_concat,
             true_coupling=true_coupling,
             key=key,
-            key_value_1=key_value_1,
-            key_value_2=key_value_2,
+            key_value_1=0,
+            key_value_2=1,
             epsilon=epsilon,
             lambda_1=lambda_1,
             lambda_2=lambda_2,
