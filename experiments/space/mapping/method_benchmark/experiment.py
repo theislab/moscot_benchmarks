@@ -159,25 +159,28 @@ def _moscot(
     return results
 
 
-def _read_process_anndata(path_data: str, dataset: int, split: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:
-    adata_sc = ad.read(Path(path_data) / f"dataset{dataset}_sc.h5ad")
+def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:
     adata_sp = ad.read(Path(path_data) / f"dataset{dataset}_sp.h5ad")
-    adata_insitu = ad.read(Path(path_data) / f"dataset{dataset}_insitu.h5ad")
 
-    train_split = f"train_{split}"
-    test_split = f"test_{split}"
+    rng = np.random.default_rng(seed)
+    if "highly_variable" in adata_sp.var.columns:
+        adata_sp = adata_sp[:, adata_sp.var.highly_variable].copy()
 
-    test_var = list(set(adata_sc.var_names).intersection(set(adata_sp.var_names[adata_sp.var[test_split]])))
+    test_var = rng.choice(adata_sp, 100, replace=False).tolist()
 
-    adata_sp_train = adata_sp[:, adata_sp.var[train_split]].copy()
-    true_df = sc.get.obs_df(adata_insitu, keys=test_var)
-    sc.tl.pca(adata_sp_train)
-    adata_sp_train.obsm["X_pca_spatial"] = np.hstack(
-        [adata_sp_train.obsm["X_pca"].copy(), adata_sp_train.obsm["spatial"].copy()]
-    )
+    adata_sp_a = sc.pp.subsample(adata_sp, fraction=0.5, copy=True, seed=seed)
+    adata_sp_b = adata_sp[~np.in1d(adata_sp.obs_names, adata_sp_a.obs_names)]
 
-    assert not np.any(np.in1d(adata_sp_train.var_names.values, true_df.columns.values)), "overlap train test set"
-    return adata_sc, adata_sp_train, true_df
+    train_var = adata_sp_a.var_names[~np.in1d(adata_sp_a.var_names, test_var)].tolist()
+
+    adata_sp_a_train = adata_sp_a[:, train_var].copy()
+    adata_sp_b_train = adata_sp_b[:, train_var].copy()
+
+    sc.tl.pca(adata_sp_b_train)
+    sc.tl.pca(adata_sp_a_train)
+    adata_sp_a.obsm["X_pca"] = adata_sp_a_train.obsm["X_pca"].copy()
+
+    return adata_sp_a, adata_sp_b
 
 
 def _corr_results(true_df: pd.DataFrame, pred_df: pd.DataFrame) -> pd.DataFrame:
