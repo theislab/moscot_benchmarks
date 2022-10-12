@@ -30,16 +30,16 @@ def config():
 
 
 @ex.automain
-def benchmark(path_data: str, dataset: int, split: int, method: str, params: Dict, path_results: str):
+def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict, path_results: str):
 
     # read data and processing
-    adata_sc, adata_sp_train, true_df = _read_process_anndata(path_data, dataset, split)
+    adata_sp_a, adata_sp_b, true_df = _read_process_anndata(path_data, dataset, seed)
     unique_id = seml.utils.make_hash(ex.current_run.config)
 
     if method == "MOSCOT":
         return _moscot(
-            adata_sc=adata_sc,
-            adata_sp_train=adata_sp_train,
+            adata_sc=adata_sp_a,
+            adata_sp_train=adata_sp_b,
             true_df=true_df,
             method=method,
             params=params,
@@ -108,6 +108,7 @@ def _tangram(
         "method_info": {"kl_reg": ad_map.uns["training_history"]["kl_reg"][-1]},
         "adata_sc_size": adata_sc.shape[0],
         "adata_sp_size": adata_sp_train.shape[0],
+        "gene_size": len(true_df.columns),
         "corr_results": corr_results,
     }
 
@@ -126,13 +127,14 @@ def _moscot(
     config.update("jax_enable_x64", True)
     from moscot.problems.space import MappingProblem
 
-    epsilon, alpha, obsm_key = params["epsilon"], params["alpha"], params["obsm_key"]
+    epsilon, alpha = params["epsilon"], params["alpha"]
     prob = MappingProblem(adata_sc=adata_sc, adata_sp=adata_sp_train)
     prob = prob.prepare(
         sc_attr={"attr": "obsm", "key": "X_pca"},
-        sp_attr={"attr": "obsm", "key": obsm_key},
-        joint_attr=None,
-        callback="local-pca",
+        sp_attr={"attr": "obsm", "key": "spatial"},
+        var_names=adata_sp_train.var_names.values,
+        callback="local-pca" if adata_sp_train.shape[1] > 100 else None,
+        kwargs={"joint-space": True},
     )
 
     start = time.perf_counter()
@@ -142,7 +144,7 @@ def _moscot(
     converged = prob.solutions[list(prob.solutions.keys())[0]].converged
     cost = prob.solutions[list(prob.solutions.keys())[0]].cost
 
-    adata_pred = prob.impute(var_names=true_df.columns.values, device="cpu")
+    adata_pred = prob.impute(var_names=true_df.columns.tolist(), device="cpu")
     pred_df = sc.get.obs_df(adata_pred, keys=true_df.columns.tolist())
 
     corr_results = _corr_results(true_df, pred_df)
@@ -153,6 +155,7 @@ def _moscot(
         "method_info": {"converged": converged, "cost": cost},
         "adata_sc_size": adata_sc.shape[0],
         "adata_sp_size": adata_sp_train.shape[0],
+        "gene_size": len(true_df.columns),
         "corr_results": corr_results,
     }
 
@@ -169,12 +172,12 @@ def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnD
     else:
         n_genes = 10
 
-    test_var = rng.choice(adata_sp, n_genes, replace=False).tolist()
+    adata_sp_a = sc.pp.subsample(adata_sp, fraction=0.5, copy=True, random_state=seed)
+    adata_sp_b = adata_sp[~np.in1d(adata_sp.obs_names, adata_sp_a.obs_names)].copy()
 
-    adata_sp_a = sc.pp.subsample(adata_sp, fraction=0.5, copy=True, seed=seed)
-    adata_sp_b = adata_sp[~np.in1d(adata_sp.obs_names, adata_sp_a.obs_names)]
-
+    test_var = rng.choice(adata_sp.var_names, n_genes, replace=False).tolist()
     train_var = adata_sp_a.var_names[~np.in1d(adata_sp_a.var_names, test_var)].tolist()
+    true_df = sc.get.obs_df(adata_sp_b, keys=test_var)
 
     adata_sp_a_train = adata_sp_a[:, train_var].copy()
     adata_sp_b_train = adata_sp_b[:, train_var].copy()
@@ -182,11 +185,12 @@ def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnD
     sc.tl.pca(adata_sp_b_train)
     sc.tl.pca(adata_sp_a_train)
     adata_sp_a.obsm["X_pca"] = adata_sp_a_train.obsm["X_pca"].copy()
-
-    return adata_sp_a, adata_sp_b
+    return adata_sp_a, adata_sp_b_train, true_df
 
 
 def _corr_results(true_df: pd.DataFrame, pred_df: pd.DataFrame) -> pd.DataFrame:
     corr_pearson = pred_df.corrwith(true_df, method="pearson")
     corr_spearman = pred_df.corrwith(true_df, method="spearman")
-    return pd.concat([corr_pearson, corr_spearman], axis=1)
+    out = pd.concat([corr_pearson, corr_spearman], axis=1)
+    out.columns = ["pearson", "spearman"]
+    return out
