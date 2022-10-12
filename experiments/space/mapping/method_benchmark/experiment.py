@@ -46,6 +46,28 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
             path_results=path_results,
             unique_id=unique_id,
         )
+    elif method == "GIMVI":
+        return _gimvi(
+            adata_sc=adata_sp_a,
+            adata_sp_train=adata_sp_b,
+            true_df=true_df,
+            method=method,
+            params=params,
+            path_results=path_results,
+            unique_id=unique_id,
+        )
+    elif method == "TANGRAM":
+        return _tangram(
+            adata_sc=adata_sp_a,
+            adata_sp_train=adata_sp_b,
+            true_df=true_df,
+            method=method,
+            params=params,
+            path_results=path_results,
+            unique_id=unique_id,
+        )
+    else:
+        raise ValueError("Method not implemented")
 
 
 def _gimvi(
@@ -54,10 +76,12 @@ def _gimvi(
     true_df: pd.DataFrame,
     method: str,
     params: Optional[Dict] = None,
+    path_results: str = None,
+    unique_id: str = None,
 ):
     from scvi.external import GIMVI
 
-    epochs = params["epochs"]
+    epochs = params["epochs"]  # 200
 
     GIMVI.setup_anndata(adata_sp_train, layer="counts")
     GIMVI.setup_anndata(adata_sc, layer="counts")
@@ -67,13 +91,28 @@ def _gimvi(
     model.train(epochs)
     end = time.perf_counter()
 
+    _, gene_pred = model.get_imputed_values(normalized=True)
+
+    adata_pred = AnnData(gene_pred, dtype=np.float_)
+    adata_pred.var.index = adata_sc.var_names
+
+    pred_df = sc.get.obs_df(adata_pred, keys=true_df.columns.tolist())
+
+    corr_results = _corr_results(true_df, pred_df)
+    corr_results.to_csv(path_results / f"{unique_id}_corr_results.csv")
+
     results = {
         "time": end - start,
         "method": method,
-        # "method_info": {"kl_reg": ad_map.uns["training_history"]["kl_reg"][-1]},
+        "method_info": None,
         "adata_sc_size": adata_sc.shape[0],
         "adata_sp_size": adata_sp_train.shape[0],
-        # "corr_results": corr_results,
+        "gene_size": len(true_df.columns),
+        "corr_results_mean": corr_results.mean(0),
+        "corr_results_median": corr_results.median(0),
+        "corr_results_var": corr_results.var(0),
+        "corr_results_max": corr_results.max(0),
+        "corr_results_min": corr_results.min(0),
     }
 
     return results
@@ -85,12 +124,14 @@ def _tangram(
     true_df: pd.DataFrame,
     method: str,
     params: Optional[Dict] = None,
+    path_results: str = None,
+    unique_id: str = None,
 ):
     import torch
     import tangram as tg
 
-    device = torch.device("cuda:0")
-    tg.pp_adatas(adata_sc, adata_sp_train, genes=adata_sp_train.var_names.tolist())
+    tg.pp_adatas(adata_sc, adata_sp_train, genes=true_df.columns.tolist())
+    device = torch.device("cuda")
 
     start = time.perf_counter()
     ad_map = tg.map_cells_to_space(adata_sc, adata_sp_train, device=device)
@@ -101,6 +142,7 @@ def _tangram(
     pred_df = sc.get.obs_df(ad_ge, keys=true_df.columns.tolist())
 
     corr_results = _corr_results(true_df, pred_df)
+    corr_results.to_csv(path_results / f"{unique_id}_corr_results.csv")
 
     results = {
         "time": end - start,
@@ -109,7 +151,11 @@ def _tangram(
         "adata_sc_size": adata_sc.shape[0],
         "adata_sp_size": adata_sp_train.shape[0],
         "gene_size": len(true_df.columns),
-        "corr_results": corr_results,
+        "corr_results_mean": corr_results.mean(0),
+        "corr_results_median": corr_results.median(0),
+        "corr_results_var": corr_results.var(0),
+        "corr_results_max": corr_results.max(0),
+        "corr_results_min": corr_results.min(0),
     }
 
     return results
@@ -121,6 +167,8 @@ def _moscot(
     true_df: pd.DataFrame,
     method: str,
     params: Optional[Dict] = None,
+    path_results: str = None,
+    unique_id: str = None,
 ) -> None:
     from jax.config import config
 
@@ -149,6 +197,8 @@ def _moscot(
 
     corr_results = _corr_results(true_df, pred_df)
 
+    corr_results.to_csv(path_results / f"{unique_id}_corr_results.csv")
+
     results = {
         "time": end - start,
         "method": method,
@@ -156,7 +206,11 @@ def _moscot(
         "adata_sc_size": adata_sc.shape[0],
         "adata_sp_size": adata_sp_train.shape[0],
         "gene_size": len(true_df.columns),
-        "corr_results": corr_results,
+        "corr_results_mean": corr_results.mean(0),
+        "corr_results_median": corr_results.median(0),
+        "corr_results_var": corr_results.var(0),
+        "corr_results_max": corr_results.max(0),
+        "corr_results_min": corr_results.min(0),
     }
 
     return results
