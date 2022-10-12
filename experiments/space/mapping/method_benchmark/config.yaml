@@ -3,7 +3,7 @@ seml:
     project_root_dir: .
     conda_environment: moscot
     name: fgw-mapping
-    output_dir: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping-fgw
+    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/mapping/method_benchmark/seml_output
 
 slurm: #TODO: SPECIFY
     sbatch_options_template: GPU
@@ -11,42 +11,47 @@ slurm: #TODO: SPECIFY
         gres: gpu:1 # num GPUs
         mem: 90G # memory
         cpus-per-task: 6 # num cores
-        time: 10:00 # max time, D-HH:MM
+        time: 30:00 # max time, D-HH:MM
         # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
 
 fixed:
-    seed: 442
     path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data
     path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping_methods
 
 grid:
     dataset:
         type: choice
-        options: [1]
-    split:
+        options: [45, 7, 3, 20, 18, 34, 37, 26, 4, 1, 32, 30, 39, 22, 5, 24, 35, 14, 29, 19, 41, 36, 23, 43, 21, 42, 27, 17, 33, 2, 25, 10]
+    seed:
         type: choice
-        options: [1]
+        options: [42, 224, 422]
 
 moscot:
     fixed:
-        method: moscot
+        method: MOSCOT
     grid:
         params:
             epsilon:
                 type: choice
-                options: [1e-2]
+                options: [1e-1, 1e-2, 5e-3]
             alpha:
                 type: choice
-                options: [0.1]
+                options: [0.5, 0.9]
 
 tangram:
     fixed:
-        method: tangram
+        method: TANGRAM
     grid:
         params:
-            epsilon:
+            mode:
                 type: choice
-                options: [1e-2]
-            alpha:
+                options: [cluster]
+
+gimvi:
+    fixed:
+        method: GIMVI
+    grid:
+        params:
+            epochs:
                 type: choice
-                options: [0.1]
+                options: [200]
