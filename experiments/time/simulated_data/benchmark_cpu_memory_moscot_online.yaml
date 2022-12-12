@@ -1,0 +1,86 @@
+seml:
+    executable: experiments/time/benchmark.py  # relative path to the script that contains the experiment
+    project_root_dir: ../../..
+    conda_environment: jax_gpu3
+    name: tedsim_cpu_memory
+    output_dir: experiments/time/simulated_data/logs/tedsim_cpu_memory # this directory must exist already
+
+slurm:
+    experiments_per_job: 1
+    #max_simultaneous_jobs: 20
+    sbatch_options_template: CPU
+    sbatch_options:
+    # gres: gpu:1       # num GPUs
+        mem: 512G # memory
+        cpus-per-task: 32 # num cores
+        time: 23:00 # max time, D-HH:MM
+        #constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
+
+fixed:
+    benchmark_mode: cpu_memory
+    validate_ot: true
+    epsilon: 5e-2
+    lambda_1: 2
+    lambda_2: 10
+    threshold: 1e-6
+    max_iterations: 1e6
+    seed: 1234
+    n_val_samples: 50
+
+
+grid:
+    run:
+        type: range
+        min: 0
+        max: 3
+        step: 1
+    fpath:
+        type: choice
+        options:
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_1024.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_2048.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_4096.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_8192.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_16384.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_32768.h5ad
+        -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_65536.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_131072.h5ad
+        #-   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_262144.h5ad
+#WOT:
+#    fixed:
+#        model: WOT
+
+moscot:
+    fixed:
+        model: moscot
+        rank: -1
+        gamma: None
+    grid:
+        batch_size:
+            type: choice
+            options:
+            -   None
+            -   1024
+
+#moscot_lr:
+#    fixed:
+#        model: moscot
+#        batch_size: None
+#    grid:
+#        rank:
+#            type: choice
+#            options:
+#            -   50
+#            -   200
+#            -   1000
+#        gamma:
+#            type: choice
+#            options:
+#            -   10
+#        initializer:
+#            type: choice
+#            options:
+#            - "random"
+            #- "rank2"
+            #- "k-means"
+            #- "generalized-k-means"

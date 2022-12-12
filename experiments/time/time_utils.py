@@ -99,7 +99,7 @@ def _get_masses_moscot(
         pushed_mass = output.solution.push(mass).squeeze()
         weight_factor = jnp.sum(pushed_mass)
         if random:
-            pushed_mass = output.b[:, -1]
+            pushed_mass = output.b#[:, -1]
             pushed_mass /= pushed_mass.sum()
         else:
             pushed_mass /= weight_factor
@@ -111,7 +111,7 @@ def _get_masses_moscot(
         pushed_mass = output.solution.pull(mass).squeeze()
         weight_factor = jnp.sum(pushed_mass)
         if random:
-            pushed_mass = output.a[:, -1]
+            pushed_mass = output.a#[:, -1]
             pushed_mass /= pushed_mass.sum()
         else:
             pushed_mass /= weight_factor

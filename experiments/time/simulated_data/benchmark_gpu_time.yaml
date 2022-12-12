@@ -10,12 +10,14 @@ slurm:
     sbatch_options_template: GPU
     sbatch_options:
       gres: gpu:1       # num GPUs
-      nodelist: supergpu05
+      cpus-per-task: 4 # num cores
+      mem: 32G # memory
+      time: 30:00 # max time, D-HH:MM
 
 fixed:
     benchmark_mode: time
     validate_ot: true
-    epsilon: 5e-1
+    epsilon: 5e-2
     lambda_1: 1
     lambda_2: 10
     threshold: 1e-3
@@ -27,7 +29,7 @@ grid:
     run:
         type: range
         min: 0
-        max: 1
+        max: 3
         step: 1
     fpath:
         type: choice
@@ -40,6 +42,7 @@ grid:
         -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_32768.h5ad
         -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_65536.h5ad
         -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_131072.h5ad
+        -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_262144.h5ad
 WOT:
     fixed:
         model: WOT
@@ -47,37 +50,33 @@ WOT:
 moscot:
     fixed:
         model: moscot
-        rank: None
+        rank: -1
         gamma: None
     grid:
-        online:
+        batch_size:
             type: choice
             options:
-            -   false
+            -   None
             -   1024
 
 moscot_lr:
     fixed:
         model: moscot
+        batch_size: None
     grid:
-        online:
-            type: choice
-            options:
-            -   false
-            -   1024
         rank:
             type: choice
             options:
-            -   5
-            -   10
             -   50
             -   200
             -   1000
         gamma:
             type: choice
             options:
-            -   0.01
-            -   0.1
-            -   1
+            #-   1
             -   10
-            -   100
+            #-   100
+        initializer:
+            type: choice
+            options:
+            - "random"

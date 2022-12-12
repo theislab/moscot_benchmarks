@@ -6,20 +6,20 @@ seml:
     output_dir: experiments/time/simulated_data/logs/tedsim_cpu_memory # this directory must exist already
 
 slurm:
-    #experiments_per_job: 1
+    experiments_per_job: 1
     #max_simultaneous_jobs: 20
     sbatch_options_template: CPU
     sbatch_options:
     # gres: gpu:1       # num GPUs
-    # mem: 90G # memory
-        cpus-per-task: 3 # num cores
+        mem: 256G # memory
+        cpus-per-task: 32 # num cores
         time: 23:00 # max time, D-HH:MM
         #constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
 
 fixed:
     benchmark_mode: cpu_memory
     validate_ot: true
-    epsilon: 5e-1
+    epsilon: 5e-2
     lambda_1: 2
     lambda_2: 10
     threshold: 1e-6
@@ -32,7 +32,7 @@ grid:
     run:
         type: range
         min: 0
-        max: 1
+        max: 3
         step: 1
     fpath:
         type: choice
@@ -45,6 +45,7 @@ grid:
         -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_32768.h5ad
         -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_65536.h5ad
         -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_131072.h5ad
+        -   /lustre/groups/ml01/datasets/projects/2022-02-25_moscot/moscot-lineage_reproducibility/notebooks/analysis_notebooks/tedsim/data_generation/adatas_large/adata_262144.h5ad
 WOT:
     fixed:
         model: WOT
@@ -52,37 +53,34 @@ WOT:
 moscot:
     fixed:
         model: moscot
-        rank: None
+        rank: -1
         gamma: None
     grid:
-        online:
+        batch_size:
             type: choice
             options:
-            -   false
+            -   None
             -   1024
 
 moscot_lr:
     fixed:
         model: moscot
+        batch_size: None
     grid:
-        online:
-            type: choice
-            options:
-            -   false
-            -   1024
         rank:
             type: choice
             options:
-            -   5
-            -   10
             -   50
             -   200
             -   1000
         gamma:
             type: choice
             options:
-            -   0.01
-            -   0.1
-            -   1
             -   10
-            -   100
+        initializer:
+            type: choice
+            options:
+            - "random"
+            #- "rank2"
+            #- "k-means"
+            #- "generalized-k-means"
