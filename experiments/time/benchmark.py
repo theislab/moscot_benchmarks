@@ -6,7 +6,6 @@ root = Path(__file__).parent.parent.parent.absolute()
 sys.path.insert(0, str(root / "moscot_benchmarks"))
 from typing import Any, Tuple, Union, Literal, Callable, Optional
 
-from time_utils import prepare_data
 from utils import benchmark_time, benchmark_memory
 from sacred import Experiment
 from scipy.stats import entropy
@@ -32,8 +31,6 @@ def _benchmark_wot(
     epsilon: float,
     lambda_1: float,
     lambda_2: float,
-    threshold: float,
-    max_iterations: int,
     n_val_samples: Optional[int] = None,
 ):
     import wot
@@ -49,8 +46,6 @@ def _benchmark_wot(
         epsilon=epsilon,
         lambda1=lambda_1,
         lambda2=lambda_2,
-        #threshold=threshold, we take default value
-        #max_iter=max_iterations, we take default value
         local_pca=0,
     )
 
@@ -77,15 +72,10 @@ def _benchmark_moscot(
     epsilon: float,
     lambda_1: float,
     lambda_2: float,
-    threshold: float,
-    max_iterations: int,
     rank: Optional[int] = None,
     batch_size: Optional[int] = None,
     seed: Optional[int] = None,
-    jit: Optional[bool] = False,
-    gamma: Optional[float] = None,
     n_val_samples: Optional[int] = None,
-    initializer: Optional[str] = None,
 ):
     from jax.config import config
 
@@ -98,13 +88,13 @@ def _benchmark_moscot(
     if rank == -1:
         kwargs = {} #{"jit":jit, "threshold":threshold, "max_iterations":max_iterations}
     else:
-        kwargs = {"rank":rank, "gamma":gamma}
+        kwargs = {"rank":rank}
         #kwargs = {
         #    "jit":jit, "threshold":1e-3, "max_iterations":max_iterations, "rank":rank, "gamma":gamma,
         #} # seed is set internally in ott-jax
 
     tp = TemporalProblem(adata)
-    tp.prepare("day", subset=[(key_value_1, key_value_2)], policy="sequential", joint_attr="X_pca")
+    tp.prepare("day", joint_attr="X_pca")
 
     benchmarked_f = benchmark_f(tp.solve)
     benchmark_result, ot_result = benchmarked_f(
@@ -112,8 +102,7 @@ def _benchmark_moscot(
         scale_cost="mean",
         tau_a = 1 if rank > -1 else lambda_1 / (lambda_1 + epsilon),
         tau_b = 1 if rank > -1 else lambda_2 / (lambda_2 + epsilon),
-        batch_size=batch_size,
-        initializer=initializer,
+        batch_size=batch_size, #TODO: check with Mike
         **kwargs
     )
 
@@ -156,11 +145,10 @@ def benchmark(
     benchmark_mode: Literal["time", "cpu_memory"],
     validate_ot: bool,
     model: Literal["moscot", "WOT"],
-    fpath: str,
+    fpath: Union[str, Tuple[str, str]],
     epsilon: float,
     lambda_1: float,
     lambda_2: float,
-    threshold: float,
     max_iterations: int,
     rank: Optional[int] = None,
     batch_size: Optional[int] = None,
@@ -173,6 +161,7 @@ def benchmark(
     from sklearn.metrics import pairwise_distances
     import anndata
     from scipy.sparse import dok_matrix, csr_matrix
+    from time_utils import prepare_data
 
     import scanpy as sc
 
@@ -183,24 +172,29 @@ def benchmark(
     else:
         raise NotImplementedError
 
+    if run == -1:
+        adata = sc.read_h5ad(fpath)
+        true_coupling, rna_arrays, _ = prepare_data(adata, np.log2(len(adata)+2)-3)
+        del adata
+        adata_early = anndata.AnnData(csr_matrix((rna_arrays["early"].shape[0], 1)))
+        adata_early.obs_names = ["a"+str(n) for n in adata_early.obs_names]
+        adata_late = anndata.AnnData(csr_matrix((rna_arrays["late"].shape[0], 1)))  
+        adata_early.obs["day"] = 0
+        adata_early.obsm["X_pca"] = rna_arrays["early"]
+        adata_late.obs["day"] = 1
+        adata_late.obsm["X_pca"] = rna_arrays["late"]
+        
+        adata_concat = anndata.concat([adata_early, adata_late])
+        del adata_early
+        del adata_late
 
-    adata = sc.read_h5ad(fpath)
-    true_coupling, rna_arrays, _ = prepare_data(adata, np.log2(len(adata)+2)-3)
-    del adata
-    adata_early = anndata.AnnData(csr_matrix((rna_arrays["early"].shape[0], 1)))
-    adata_early.obs_names = ["a"+str(n) for n in adata_early.obs_names]
-    adata_late = anndata.AnnData(csr_matrix((rna_arrays["late"].shape[0], 1)))  
-    adata_early.obs["day"] = 0
-    adata_early.obsm["X_pca"] = rna_arrays["early"]
-    adata_late.obs["day"] = 1
-    adata_late.obsm["X_pca"] = rna_arrays["late"]
-    
-    adata_concat = anndata.concat([adata_early, adata_late])
-    del adata_early
-    del adata_late
-    
+        adata.save("new_path")
+        return None
+
+    adata= sc.read(fpath)
+
     if model == "WOT":
-        C = pairwise_distances(rna_arrays["early"], rna_arrays["late"], metric="sqeuclidean")
+        C = pairwise_distances(adata[adata.obs["time"]==0].obsm["X_pca"], adata[adata.obs["time"]==1].obsm["X_pca"], metric="sqeuclidean")
         C /= C.mean()
         del rna_arrays
 
@@ -215,7 +209,6 @@ def benchmark(
             epsilon=epsilon,
             lambda_1=lambda_1,
             lambda_2=lambda_2,
-            threshold=threshold,
             max_iterations=max_iterations,
             n_val_samples=n_val_samples,
         )
@@ -231,7 +224,6 @@ def benchmark(
             epsilon=epsilon,
             lambda_1=lambda_1,
             lambda_2=lambda_2,
-            threshold=threshold,
             max_iterations=max_iterations,
             rank=rank,
             batch_size=batch_size,

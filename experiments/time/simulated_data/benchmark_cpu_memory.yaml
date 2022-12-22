@@ -22,7 +22,6 @@ fixed:
     epsilon: 5e-2
     lambda_1: 2
     lambda_2: 10
-    threshold: 1e-6
     max_iterations: 1e6
     seed: 1234
     n_val_samples: 50
@@ -32,7 +31,7 @@ grid:
     run:
         type: range
         min: 0
-        max: 3
+        max: 5
         step: 1
     fpath:
         type: choice

@@ -180,7 +180,7 @@ def _distance_pushed_masses(
         geom = pointcloud.PointCloud(gex_data, gex_data, epsilon=eps, scale_cost="mean")
         out = sinkhorn.sinkhorn(geom, pushed_mass_true, pushed_mass, max_iterations=1e7)
         wasserstein_d += float(out.reg_ot_cost) * weight_factor
-        total_weight = +weight_factor
+        total_weight += weight_factor
         del geom
         del out
 
@@ -715,7 +715,7 @@ def prepare_data(
     if ssr is not None:
         barcodes = stochastic_silencing(barcodes, stochastic_silencing_rate=ssr)
     true_trees = build_true_trees(
-        rna, barcodes, meta=adata.obs, tree=tree, depth=depth, n_pcs=n_pcs, ttp=ttp
+        rna, barcodes, meta=adata.obs, tree=tree, depth=depth, n_pcs=n_pcs, ttp=ttp      
     )
     data_arrays = {
         "late": lot_inf.extract_data_arrays(true_trees["late"]),
