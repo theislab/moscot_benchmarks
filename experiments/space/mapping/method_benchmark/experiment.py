@@ -142,6 +142,9 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         from moscot.problems.space import MappingProblem
 
         epsilon, alpha = params["epsilon"], params["alpha"]
+        adata_sp_train.obsm["spatial"] = (
+            adata_sp_train.obsm["spatial"] - adata_sp_train.obsm["spatial"].mean()
+        ) / adata_sp_train.obsm["spatial"].std()
         prob = MappingProblem(adata_sc=adata_sc, adata_sp=adata_sp_train)
         prob = prob.prepare(
             sc_attr={"attr": "obsm", "key": "X_pca"},
