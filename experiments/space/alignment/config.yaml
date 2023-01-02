@@ -1,8 +1,8 @@
 seml:
-    executable: spatial_alignment/experiment.py
+    executable: ./experiment.py
+    project_root_dir: .
     name: spatial_alignment
-    output_dir: spatial_alignment/logs
-    project_root_dir: ..
+    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/mapping/method_benchmark/seml_output
 
 slurm:
     experiments_per_job: 1
@@ -20,7 +20,7 @@ slurm:
 ###### BEGIN PARAMETER CONFIGURATION ######
 fixed:
     train:
-        training.output: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/alignment/seml_output
+        training.output: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/alignment_methods
         training.reference_key: reference
     data:
         dataset.adata: /home/icb/giovanni.palla/workspace/moscot/dat/alignment.h5ad
