@@ -42,11 +42,11 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
     ):
         from scvi.external import GIMVI
 
-        epochs = params["epochs"]  # 200
+        epochs, n_latent = params["epochs"], params["n_latent"]  # 200
 
         GIMVI.setup_anndata(adata_sp_train, layer="counts")
         GIMVI.setup_anndata(adata_sc, layer="counts")
-        model = GIMVI(adata_sc, adata_sp_train)
+        model = GIMVI(adata_sc, adata_sp_train, n_latent=n_latent)
 
         start = time.perf_counter()
         model.train(epochs)
@@ -90,11 +90,18 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         import torch
         import tangram as tg
 
+        learning_rate, num_epochs = params["learning_rate"], params["num_epochs"]
         tg.pp_adatas(adata_sc, adata_sp_train, genes=true_df.columns.tolist())
         device = torch.device("cuda")
 
         start = time.perf_counter()
-        ad_map = tg.map_cells_to_space(adata_sc, adata_sp_train, device=device)
+        ad_map = tg.map_cells_to_space(
+            adata_sc,
+            adata_sp_train,
+            device=device,
+            learning_rate=learning_rate,
+            num_epochs=num_epochs,
+        )
         end = time.perf_counter()
 
         ad_ge = tg.project_genes(ad_map, adata_sc)

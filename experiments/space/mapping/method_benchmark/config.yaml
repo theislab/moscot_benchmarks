@@ -43,9 +43,12 @@ tangram:
         method: TANGRAM
     grid:
         params:
-            mode:
+            learning_rate:
                 type: choice
-                options: [cluster]
+                options: [0.1, 0.01]
+            num_epochs:
+                type: choice
+                options: [500, 1000, 2000]
 
 gimvi:
     fixed:
@@ -54,4 +57,7 @@ gimvi:
         params:
             epochs:
                 type: choice
-                options: [200]
+                options: [200, 400, 600]
+            n_latent:
+                type: choice
+                options: [10, 20]
