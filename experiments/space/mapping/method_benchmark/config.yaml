@@ -11,7 +11,7 @@ slurm: #TODO: SPECIFY
         gres: gpu:1 # num GPUs
         mem: 90G # memory
         cpus-per-task: 6 # num cores
-        time: 30:00 # max time, D-HH:MM
+        time: 60:00 # max time, D-HH:MM
         # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
 
 fixed:
@@ -33,7 +33,7 @@ moscot:
         params:
             epsilon:
                 type: choice
-                options: [1e-1, 1e-2, 5e-3]
+                options: [1e-2, 5e-3, 1e-3]
             alpha:
                 type: choice
                 options: [0.5, 0.9]

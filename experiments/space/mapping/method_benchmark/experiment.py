@@ -145,14 +145,11 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         prob = MappingProblem(adata_sc=adata_sc, adata_sp=adata_sp_train)
         prob = prob.prepare(
             sc_attr={"attr": "obsm", "key": "X_pca"},
-            sp_attr={"attr": "obsm", "key": "spatial"},
             var_names=adata_sp_train.var_names.values,
-            callback="local-pca" if adata_sp_train.shape[1] > 100 else None,
-            kwargs={"joint-space": True},
         )
 
         start = time.perf_counter()
-        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=10_000)
+        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=500, threshold=1e-5)
         end = time.perf_counter()
 
         converged = prob.solutions[list(prob.solutions.keys())[0]].converged
