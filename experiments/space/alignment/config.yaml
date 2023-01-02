@@ -63,7 +63,7 @@ gpsa:
                 options: [1e-2, 5e-3, 1e-3]
             solver.n_epochs:
                 type: choice
-                options: [5000, 1000, 2000]
+                options: [500, 1000, 2000]
 
 random:
     samples: 3
