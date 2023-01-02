@@ -134,7 +134,7 @@ def compute_gpsa(adata, kernel, n_epochs, lr):
     N_LATENT_GPS = {"expression": None}
 
     N_EPOCHS = 1000
-    KERNEL = rbf_kernel if kernel == "rbf" else matern12_kernel
+    KERNEL = rbf_kernel if kernel == "RBF" else matern12_kernel
 
     model = VariationalGPSA(
         data_dict,
