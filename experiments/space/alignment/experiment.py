@@ -75,10 +75,15 @@ class ExperimentWrapper:
 
             self.alpha = solver["alpha"]
             self.epsilon = solver["epsilon"]
+            self.rank = solver["rank"]
         elif self.model_type == "gpsa":
             self.kernel = solver["kernel"]
             self.n_epochs = solver["n_epochs"]
             self.lr = solver["lr"]
+        elif self.model_type == "paste":
+            self.alpha = solver["alpha"]
+            self.dissimilarity = solver["dissimilarity"]
+            self.norm = solver["norm"]
         else:
             raise ValueError("Wrong model type.")
 
@@ -94,6 +99,8 @@ class ExperimentWrapper:
             test_results = compute_moscot(self.problem, self.adata, self.epsilon, self.rank, self.alpha)
         elif self.model_type == "gpsa":
             test_results = compute_gpsa(self.adata, self.kernel, self.n_epochs, self.lr)
+        elif self.model_type == "paste":
+            test_results = compute_gpsa(self.adata, self.alpha, self.dissimilarity, self.norm)
         else:
             raise ValueError("Wrong model type.")
         test_results["n_obs"] = self.adata.shape[0]
@@ -206,6 +213,31 @@ def compute_moscot(problem, adata, epsilon, rank, alpha):
 
     test_results = {}
     test_results["mse"] = mean_squared_error(ad1.obsm["spatial_norm_warp"][comm1], ad2.obsm["spatial_norm_warp"][comm2])
+    test_results["time"] = compute_time
+
+    return test_results
+
+
+def compute_paste(adata, alpha, dissimilarity, norm):
+    from time import perf_counter
+
+    from sklearn.metrics import mean_squared_error
+    import paste as pst
+
+    batch1 = adata[adata.obs.batch == 0].copy()
+    batch2 = adata[adata.obs.batch == 1].copy()
+    start = perf_counter()
+    pi12 = pst.pairwise_align(batch1, batch2, alpha=alpha, dissimilarity=dissimilarity, norm=norm)
+    compute_time = perf_counter() - start
+    pi12norm = pi12 / pi12.sum(0)
+    out = (batch1.obsm["spatial"].T @ pi12norm).T
+    batch1.obsm["spatial_warp"] = batch1.obsm["spatial"]
+    batch2.obsm["spatial_warp"] = out
+
+    _, comm1, comm2 = np.intersect1d(batch1.obs.idx, batch2.obs.idx, return_indices=True)
+
+    test_results = {}
+    test_results["mse"] = mean_squared_error(batch1.obsm["spatial_warp"][comm1], batch2.obsm["spatial_warp"][comm2])
     test_results["time"] = compute_time
 
     return test_results

@@ -2,18 +2,18 @@ seml:
     executable: ./experiment.py
     project_root_dir: .
     name: spatial_alignment
-    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/mapping/method_benchmark/seml_output
+    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/alignment/seml_output
 
 slurm:
     experiments_per_job: 1
     max_simultaneous_jobs: 20
     sbatch_options_template: CPU
     sbatch_options:
-        gres: gpu:1 # num GPUs
-        mem: 90G # memory
-        cpus-per-task: 6 # num cores
-        time: 60:00 # max time, D-HH:MM
-        # time: 23:00 # max time, D-HH:MM
+        # gres: gpu:1 # num GPUs
+        # mem: 90G # memory
+        # cpus-per-task: 6 # num cores
+        # time: 0-01:00:00 # max time, D-HH:MM
+        time: 23:00 # max time, D-HH:MM
         # constraint: xeon_6126|opteron_6234|opteron_6376|opteron_6378
     # exclude: supergpu[05,07-08],supergpu06,icb-gpusrv[01-02],icb-gpusrv[04-05]
 
@@ -32,7 +32,7 @@ grid:
             options: [1, 2, 3, 4]
         dataset.fraction:
             type: choice
-            options: [0.5, 0.7, 0.9, 1]
+            options: [0.7, 0.9, 1]
 
 moscot:
     fixed:
@@ -45,7 +45,7 @@ moscot:
                 options: [0.1, 0.5, 0.9]
             solver.epsilon:
                 type: choice
-                options: [1e-3, 1e-2, 1e-1]
+                options: [1e-3, 1e-2]
             solver.rank:
                 type: choice
                 options: [-1, 100]
@@ -61,10 +61,26 @@ gpsa:
                 options: [MATERN, RBF]
             solver.lr:
                 type: choice
-                options: [1e-2, 5e-3, 1e-3]
+                options: [1e-2, 5e-3]
             solver.n_epochs:
                 type: choice
                 options: [500, 1000, 2000]
+
+paste:
+    fixed:
+        model:
+            tool.type: paste
+    grid:
+        model:
+            solver.alpha:
+                type: choice
+                options: [0.1, 0.2, 0.3, 0.5, 0.9]
+            solver.norm:
+                type: choice
+                options: [true, false]
+            solver.dissimilarity:
+                type: choice
+                options: [euclidean]
 
 random:
     samples: 3
