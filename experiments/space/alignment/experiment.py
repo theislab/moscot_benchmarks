@@ -201,13 +201,22 @@ def compute_moscot(problem, adata, epsilon, rank, alpha):
     from time import perf_counter
 
     from sklearn.metrics import mean_squared_error
+    import pandas as pd
+
+    adata.obs["batch"] = pd.Categorical(adata.obs["batch"].astype(str))
 
     start = perf_counter()
-    problem = problem.solve(epsilon=epsilon, rank=rank, alpha=alpha)
+    problem = problem.solve(
+        epsilon=epsilon,
+        rank=rank,
+        alpha=alpha,
+        max_iterations=100,
+        threshold=1e-5,
+    )
     compute_time = perf_counter() - start
-    problem.align(reference=0)
-    ad1 = adata[adata.obs.batch == 0].copy()
-    ad2 = adata[adata.obs.batch == 1].copy()
+    problem.align(reference="0")
+    ad1 = adata[adata.obs.batch == "0"].copy()
+    ad2 = adata[adata.obs.batch == "1"].copy()
 
     _, comm1, comm2 = np.intersect1d(ad1.obs.idx, ad2.obs.idx, return_indices=True)
 

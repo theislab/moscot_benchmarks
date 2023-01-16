@@ -33,10 +33,10 @@ moscot:
         params:
             epsilon:
                 type: choice
-                options: [1e-2, 5e-3, 1e-3]
+                options: [1e-2, 5e-3]
             alpha:
                 type: choice
-                options: [0.5, 0.9]
+                options: [0.1, 0.5, 0.9]
 
 tangram:
     fixed:

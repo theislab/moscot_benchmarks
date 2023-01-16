@@ -45,42 +45,42 @@ moscot:
                 options: [0.1, 0.5, 0.9]
             solver.epsilon:
                 type: choice
-                options: [1e-3, 1e-2]
+                options: [1e-5, 1e-4, 1e-3, 1e-2]
             solver.rank:
                 type: choice
-                options: [-1, 100]
+                options: [-1]
 
-gpsa:
-    fixed:
-        model:
-            tool.type: gpsa
-    grid:
-        model:
-            solver.kernel:
-                type: choice
-                options: [MATERN, RBF]
-            solver.lr:
-                type: choice
-                options: [1e-2, 5e-3]
-            solver.n_epochs:
-                type: choice
-                options: [500, 1000, 2000]
+# gpsa:
+#     fixed:
+#         model:
+#             tool.type: gpsa
+#     grid:
+#         model:
+#             solver.kernel:
+#                 type: choice
+#                 options: [MATERN, RBF]
+#             solver.lr:
+#                 type: choice
+#                 options: [1e-2, 5e-3]
+#             solver.n_epochs:
+#                 type: choice
+#                 options: [500, 1000, 2000]
 
-paste:
-    fixed:
-        model:
-            tool.type: paste
-    grid:
-        model:
-            solver.alpha:
-                type: choice
-                options: [0.1, 0.2, 0.3, 0.5, 0.9]
-            solver.norm:
-                type: choice
-                options: [true, false]
-            solver.dissimilarity:
-                type: choice
-                options: [euclidean]
+# paste:
+#     fixed:
+#         model:
+#             tool.type: paste
+#     grid:
+#         model:
+#             solver.alpha:
+#                 type: choice
+#                 options: [0.1, 0.2, 0.3, 0.5, 0.9]
+#             solver.norm:
+#                 type: choice
+#                 options: [true, false]
+#             solver.dissimilarity:
+#                 type: choice
+#                 options: [euclidean]
 
 random:
     samples: 3
