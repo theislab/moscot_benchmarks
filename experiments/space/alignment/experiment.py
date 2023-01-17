@@ -67,10 +67,11 @@ class ExperimentWrapper:
     @ex.capture(prefix="model")
     def init_model(self, solver, tool):
         from moscot.problems.space import AlignmentProblem
+        import pandas as pd
 
         self.model_type = tool["type"]
         if self.model_type == "moscot":
-
+            self.adata.obs["batch"] = pd.Categorical(self.adata.obs["batch"].astype(str))
             self.problem = AlignmentProblem(self.adata).prepare(batch_key="batch")
 
             self.alpha = solver["alpha"]
@@ -201,9 +202,6 @@ def compute_moscot(problem, adata, epsilon, rank, alpha):
     from time import perf_counter
 
     from sklearn.metrics import mean_squared_error
-    import pandas as pd
-
-    adata.obs["batch"] = pd.Categorical(adata.obs["batch"].astype(str))
 
     start = perf_counter()
     problem = problem.solve(
