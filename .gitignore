@@ -142,3 +142,6 @@ experiments/time/simulated_data/logs/*
 
 #seml
 *.out
+
+#files
+.csv.gz
