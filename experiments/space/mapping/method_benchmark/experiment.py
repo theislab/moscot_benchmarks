@@ -152,7 +152,7 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         )
 
         start = time.perf_counter()
-        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=500, threshold=1e-5)
+        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=100, threshold=1e-5)
         end = time.perf_counter()
 
         converged = prob.solutions[list(prob.solutions.keys())[0]].converged
