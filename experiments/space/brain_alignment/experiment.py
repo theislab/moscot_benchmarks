@@ -3,7 +3,6 @@ from pathlib import Path
 
 from sacred import Experiment
 import seml
-import pandas as pd
 
 from anndata import AnnData
 import anndata as ad
@@ -75,12 +74,15 @@ def align_large(path_data: str, dataset: int, params: Dict, path_results: str):
         results["time"] = end - start
         return results
 
-    def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:
+    def _read_process_anndata(path_data: str, dataset: int) -> Tuple[AnnData, Sequence[str]]:
+        import scanpy as sc
+
         adata = ad.read(path_data)
         all_slices = {"slice1": ["1_1", "1_2", "1_3"], "slice2": ["2_1", "2_2", "2_3"]}
         slices = all_slices[dataset]
-        adata = adata[adata.obs.batch.isin(slices[dataset])].copy()
+        adata = adata[adata.obs.batch.isin(slices)].copy()
 
+        sc.pp.subsample(adata, fraction=0.01)
         return adata, slices
 
     # read data and processing
