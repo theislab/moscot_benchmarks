@@ -144,4 +144,4 @@ experiments/time/simulated_data/logs/*
 *.out
 
 #files
-.csv.gz
+*.csv.gz

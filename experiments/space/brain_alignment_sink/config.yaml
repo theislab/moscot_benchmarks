@@ -1,0 +1,67 @@
+seml:
+    executable: ./experiment.py # relative path to the script that contains the experiment
+    project_root_dir: .
+    conda_environment: moscot
+    name: fgw-mapping
+    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/mapping/method_benchmark/seml_output
+
+slurm: #TODO: SPECIFY
+    sbatch_options_template: GPU
+    sbatch_options:
+        gres: gpu:1 # num GPUs
+        mem: 90G # memory
+        cpus-per-task: 6 # num cores
+        time: 0-05:00:00 # max time, D-HH:MM
+        # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
+
+fixed:
+    path_data: /lustre/groups/ml01/workspace/moscot_paper/mouse-vizgen/adata_full.h5ad
+    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/brain_alignment
+
+grid:
+    dataset:
+        type: choice
+        options: [slice1, slice2]
+    seed:
+        type: choice
+        options: [42, 224, 422]
+    params:
+        alpha:
+            type: choice
+            options: [0.1, 0.5, 0.9]
+
+moscot:
+    fixed:
+        method: MOSCOT
+    grid:
+        params:
+            epsilon:
+                type: choice
+                options: [1e-2, 5e-3]
+            alpha:
+                type: choice
+                options: [0.1, 0.5, 0.9]
+
+tangram:
+    fixed:
+        method: TANGRAM
+    grid:
+        params:
+            learning_rate:
+                type: choice
+                options: [0.1, 0.01]
+            num_epochs:
+                type: choice
+                options: [500, 1000, 2000]
+
+gimvi:
+    fixed:
+        method: GIMVI
+    grid:
+        params:
+            epochs:
+                type: choice
+                options: [200, 400, 600]
+            n_latent:
+                type: choice
+                options: [10, 20]
