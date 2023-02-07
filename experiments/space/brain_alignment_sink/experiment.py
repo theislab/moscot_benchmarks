@@ -30,7 +30,6 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
         adata1: AnnData,
         adata2: AnnData,
         params: Dict,
-        slices: Sequence[str],
         path_results: str,
         unique_id: str,
     ) -> None:
