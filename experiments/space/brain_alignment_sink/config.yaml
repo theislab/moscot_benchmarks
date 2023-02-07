@@ -3,65 +3,30 @@ seml:
     project_root_dir: .
     conda_environment: moscot
     name: fgw-mapping
-    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/mapping/method_benchmark/seml_output
+    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/brain_alignment_sink/seml_output
 
 slurm: #TODO: SPECIFY
-    sbatch_options_template: GPU
+    sbatch_options_template: CPU
     sbatch_options:
-        gres: gpu:1 # num GPUs
+        time: 23:00 # max time, D-HH:MM
+        # gres: gpu:1 # num GPUs
         mem: 90G # memory
-        cpus-per-task: 6 # num cores
-        time: 0-05:00:00 # max time, D-HH:MM
-        # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
+        # cpus-per-task: 6 # num cores
+        # time: 0-10:00:00 # max time, D-HH:MM
+        # exclude: supergpu03pxe
 
 fixed:
-    path_data: /lustre/groups/ml01/workspace/moscot_paper/mouse-vizgen/adata_full.h5ad
+    path_data: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/brain_alignment
     path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/brain_alignment
 
 grid:
-    dataset:
+    adatas:
         type: choice
-        options: [slice1, slice2]
-    seed:
-        type: choice
-        options: [42, 224, 422]
+        options: [159bec2f7e8a663fa744956848204f80_0.2_1, 367a8c21c7e1a2741b87e9bef5c19797_0.5_1, 52106aadd2f3dcd13c4e3d8c769aa629_0.2_1, a5893a3a233b23e94d8f955c79b592d8_0.5_1]
     params:
-        alpha:
+        epsilon:
             type: choice
-            options: [0.1, 0.5, 0.9]
-
-moscot:
-    fixed:
-        method: MOSCOT
-    grid:
-        params:
-            epsilon:
-                type: choice
-                options: [1e-2, 5e-3]
-            alpha:
-                type: choice
-                options: [0.1, 0.5, 0.9]
-
-tangram:
-    fixed:
-        method: TANGRAM
-    grid:
-        params:
-            learning_rate:
-                type: choice
-                options: [0.1, 0.01]
-            num_epochs:
-                type: choice
-                options: [500, 1000, 2000]
-
-gimvi:
-    fixed:
-        method: GIMVI
-    grid:
-        params:
-            epochs:
-                type: choice
-                options: [200, 400, 600]
-            n_latent:
-                type: choice
-                options: [10, 20]
+            options: [1e-2, 1e-3]
+        genes:
+            type: choice
+            options: [true, false]
