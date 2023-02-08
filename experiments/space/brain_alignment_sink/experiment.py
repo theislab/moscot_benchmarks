@@ -77,8 +77,8 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
             .solve(epsilon=epsilon, threshold=1e-5, batch_size=10_000)
         )
         end = time.time()
-        # sp1.save(path_results, file_prefix=f"{unique_id}_1_{epsilon}")
-        # sp2.save(path_results, file_prefix=f"{unique_id}_2_{epsilon}")
+        sp1.save(path_results, file_prefix=f"{unique_id}_1_{epsilon}")
+        sp2.save(path_results, file_prefix=f"{unique_id}_2_{epsilon}")
 
         adata1_final = adata1[adata1.obs.batch_final.isin(["0"])].copy()
         adata2_final = adata1[adata1.obs.batch_final.isin(["1"])].copy()
@@ -104,7 +104,7 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
         return results
 
     def _read_process_anndata(path_data: str, adatas: str) -> Tuple[AnnData, Sequence[str]]:
-        import scanpy as sc
+        pass
 
         adata1 = ad.read(path_data / (adatas + ".h5ad"))
         adata2 = ad.read(path_data / (adatas[:-1] + "2.h5ad"))
@@ -115,8 +115,8 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
         adata2.obs["batch_final"] = adata2.obs["batch"].replace(
             {adata2.obs["batch"].unique()[0]: "0", adata2.obs["batch"].unique()[1]: "1"}
         )
-        sc.pp.subsample(adata1, fraction=0.01)
-        sc.pp.subsample(adata2, fraction=0.01)
+        # sc.pp.subsample(adata1, fraction=0.01)
+        # sc.pp.subsample(adata2, fraction=0.01)
         return adata1, adata2
 
     # read data and processing

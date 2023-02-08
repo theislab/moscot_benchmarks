@@ -6,14 +6,13 @@ seml:
     output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/brain_alignment_sink/seml_output
 
 slurm: #TODO: SPECIFY
-    sbatch_options_template: CPU
+    sbatch_options_template: GPU
     sbatch_options:
-        time: 23:00 # max time, D-HH:MM
-        # gres: gpu:1 # num GPUs
+        gres: gpu:1 # num GPUs
         mem: 90G # memory
-        # cpus-per-task: 6 # num cores
-        # time: 0-10:00:00 # max time, D-HH:MM
-        # exclude: supergpu03pxe
+        cpus-per-task: 6 # num cores
+        time: 0-10:00:00 # max time, D-HH:MM
+        exclude: supergpu03pxe
 
 fixed:
     path_data: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/brain_alignment
