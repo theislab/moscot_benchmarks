@@ -86,11 +86,11 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
         adata1_copy = adata2[adata2.obs.batch_final.isin(["0"])].copy()
         adata3_final = adata2[adata2.obs.batch_final.isin(["1"])].copy()
 
-        spatial2 = sp1[("0", "1")].solution.to("cpu").push(adata1.obsm["spatial_norm"], scale_by_marginals=True)
+        spatial2 = sp1[("0", "1")].solution.to("cpu").push(adata1_final.obsm["spatial_norm"], scale_by_marginals=True)
         spatial3 = sp2[("0", "1")].solution.to("cpu").push(adata1_copy.obsm["spatial_norm"], scale_by_marginals=True)
 
         # get min max and normalize
-        spatial1 = adata1.obsm["spatial_norm"].copy()
+        spatial1 = adata1_final.obsm["spatial_norm"].copy()
         spatial1.min()
         spatial1.max()
 
