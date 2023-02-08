@@ -77,29 +77,29 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
             .solve(epsilon=epsilon, threshold=1e-5, batch_size=10_000)
         )
         end = time.time()
-        sp1.save(path_results, file_prefix=f"{unique_id}_1_{epsilon}")
-        sp2.save(path_results, file_prefix=f"{unique_id}_2_{epsilon}")
+        # sp1.save(path_results, file_prefix=f"{unique_id}_1_{epsilon}")
+        # sp2.save(path_results, file_prefix=f"{unique_id}_2_{epsilon}")
 
-        adata1 = adata1[adata1.obs.batch_final.isin(["0"])].copy()
-        adata2 = adata1[adata1.obs.batch_final.isin(["1"])].copy()
-        adata3 = adata2[adata2.obs.batch_final.isin(["1"])].copy()
+        adata1_final = adata1[adata1.obs.batch_final.isin(["0"])].copy()
+        adata2_final = adata1[adata1.obs.batch_final.isin(["1"])].copy()
+
+        adata1_copy = adata2[adata2.obs.batch_final.isin(["0"])].copy()
+        adata3_final = adata2[adata2.obs.batch_final.isin(["1"])].copy()
 
         spatial2 = sp1[("0", "1")].solution.to("cpu").push(adata1.obsm["spatial_norm"], scale_by_marginals=True)
-        spatial3 = sp2[("0", "1")].solution.to("cpu").push(adata1.obsm["spatial_norm"], scale_by_marginals=True)
+        spatial3 = sp2[("0", "1")].solution.to("cpu").push(adata1_copy.obsm["spatial_norm"], scale_by_marginals=True)
 
         # get min max and normalize
         spatial1 = adata1.obsm["spatial_norm"].copy()
         spatial1.min()
         spatial1.max()
 
-        adata1.obsm["spatial_norm_final"] = (adata1.obsm["spatial_norm"].copy() - spatial1.min()) / (
-            spatial1.max() - spatial1.min()
-        )
-        adata2.obsm["spatial_norm_final"] = (spatial2 - spatial2.min()) / (spatial2.max() - spatial2.min())
-        adata3.obsm["spatial_norm_final"] = (spatial3 - spatial3.min()) / (spatial3.max() - spatial3.min())
+        adata1_final.obsm["spatial_norm_final"] = (spatial1 - spatial1.min()) / (spatial1.max() - spatial1.min())
+        adata2_final.obsm["spatial_norm_final"] = (spatial2 - spatial2.min()) / (spatial2.max() - spatial2.min())
+        adata3_final.obsm["spatial_norm_final"] = (spatial3 - spatial3.min()) / (spatial3.max() - spatial3.min())
 
-        adata_final = ad.concat([adata1, adata2, adata3], label="batch_final", keys=["0", "1", "2"])
-        adata_final.write(path_results / f"{unique_id}_final.h5ad")
+        adata_final = ad.concat([adata1_final, adata2_final, adata3_final], label="batch_final", keys=["0", "1", "2"])
+        adata_final.write(path_results / f"{unique_id}_sink.h5ad")
         results["time"] = end - start
         return results
 
