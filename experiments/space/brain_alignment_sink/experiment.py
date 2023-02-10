@@ -101,6 +101,9 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
         adata_final = ad.concat([adata1_final, adata2_final, adata3_final], label="batch_final", keys=["0", "1", "2"])
         adata_final.write(path_results / f"{unique_id}_sink.h5ad")
         results["time"] = end - start
+        results["epsilon"] = epsilon
+        results["genes"] = genes
+        results["file_name"] = f"{unique_id}_sink.h5ad"
         return results
 
     def _read_process_anndata(path_data: str, adatas: str) -> Tuple[AnnData, Sequence[str]]:
