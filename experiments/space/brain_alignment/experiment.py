@@ -73,6 +73,9 @@ def align_large(path_data: str, dataset: int, params: Dict, path_results: str):
         adata2.write(Path(path_results) / f"{unique_id}_{alpha}_2.h5ad")
 
         results["time"] = end - start
+        results["file1"] = f"{unique_id}_{alpha}_1.h5ad"
+        results["file2"] = f"{unique_id}_{alpha}_2.h5ad"
+        results["slices"] = slices
         return results
 
     def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:

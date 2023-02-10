@@ -3,7 +3,7 @@ seml:
     project_root_dir: .
     conda_environment: moscot
     name: fgw-mapping
-    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/mapping/method_benchmark/seml_output
+    output_dir: /home/icb/giovanni.palla/code/moscot_benchmarks/experiments/space/brain_alignment/seml_output
 
 slurm: #TODO: SPECIFY
     sbatch_options_template: GPU
@@ -11,7 +11,7 @@ slurm: #TODO: SPECIFY
         gres: gpu:1 # num GPUs
         mem: 90G # memory
         cpus-per-task: 6 # num cores
-        time: 0-05:00:00 # max time, D-HH:MM
+        time: 0-10:00:00 # max time, D-HH:MM
   # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
 
 fixed:
