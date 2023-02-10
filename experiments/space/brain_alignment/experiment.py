@@ -50,7 +50,7 @@ def align_large(path_data: str, dataset: int, params: Dict, path_results: str):
             .prepare(batch_key="batch")
             .solve(
                 rank=500,
-                max_iterations=100,
+                max_iterations=150,
                 threshold=1e-5,
                 epsilon=0,
                 alpha=alpha,
