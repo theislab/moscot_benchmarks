@@ -15,17 +15,17 @@ slurm: #TODO: SPECIFY
         exclude: supergpu03pxe
 
 fixed:
-    path_data: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/brain_alignment
-    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/brain_alignment
+    path_data: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/fgw_brain
+    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/sink_brain
 
 grid:
     adatas:
         type: choice
-        options: [159bec2f7e8a663fa744956848204f80_0.2_1, 367a8c21c7e1a2741b87e9bef5c19797_0.5_1, 52106aadd2f3dcd13c4e3d8c769aa629_0.2_1, a5893a3a233b23e94d8f955c79b592d8_0.5_1]
+        options: [3333137d43f404b7314b8b1704144732_0.5_1.h5ad, b6a0e5950ad784ecd847dd16df6014ee_0.5_1.h5ad]
     params:
         epsilon:
             type: choice
-            options: [1e-4]
+            options: [1e-4, 1e-5]
         genes:
             type: choice
             options: [true, false]

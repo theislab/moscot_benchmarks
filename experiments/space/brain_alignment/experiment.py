@@ -78,11 +78,11 @@ def align_large(path_data: str, dataset: int, params: Dict, path_results: str):
         results["slices"] = slices
         return results
 
-    def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:
+    def _read_process_anndata(path_data: str, dataset: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:
         adata = ad.read(path_data)
         all_slices = {"slice1": ["1_1", "1_2", "1_3"], "slice2": ["2_1", "2_2", "2_3"]}
         slices = all_slices[dataset]
-        adata = adata[adata.obs.batch.isin(slices[dataset])].copy()
+        adata = adata[adata.obs.batch.isin(slices)].copy()
 
         return adata, slices
 
