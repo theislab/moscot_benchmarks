@@ -11,7 +11,7 @@ slurm: #TODO: SPECIFY
         gres: gpu:1 # num GPUs
         mem: 90G # memory
         cpus-per-task: 6 # num cores
-        time: 0-10:00:00 # max time, D-HH:MM
+        time: 0-20:00:00 # max time, D-HH:MM
         exclude: supergpu03pxe
 
 fixed:
@@ -21,11 +21,11 @@ fixed:
 grid:
     adatas:
         type: choice
-        options: [3333137d43f404b7314b8b1704144732_0.5_1.h5ad, b6a0e5950ad784ecd847dd16df6014ee_0.5_1.h5ad]
+        options: [aecfcbad2e6ee9e42235b1600169da85_0.5_1, a90c46a33a51ed3944ab21789f51c8a9_0.5_1]
     params:
         epsilon:
             type: choice
-            options: [1e-4, 1e-5]
+            options: [1e-4, 5e-4, 1e-5]
         genes:
             type: choice
-            options: [true, false]
+            options: [false]

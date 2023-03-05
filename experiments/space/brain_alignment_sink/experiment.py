@@ -62,19 +62,17 @@ def align_large(path_data: str, adatas: str, params: Dict, path_results: str):
             SinkhornProblem(adata=adata1)
             .prepare(
                 key="batch_final",
-                # max_iterations=100,
                 joint_attr={"attr": "obsm", "key": linear_cost},
             )
-            .solve(epsilon=epsilon, threshold=1e-6, batch_size=20_000)
+            .solve(epsilon=epsilon, threshold=1e-7, batch_size=20_000, max_iterations=4000)
         )
         sp2 = (
             SinkhornProblem(adata=adata2)
             .prepare(
                 key="batch_final",
-                # max_iterations=2,
                 joint_attr={"attr": "obsm", "key": linear_cost},
             )
-            .solve(epsilon=epsilon, threshold=1e-6, batch_size=20_000)
+            .solve(epsilon=epsilon, threshold=1e-7, batch_size=20_000, max_iterations=4000)
         )
         end = time.time()
         sp1.save(path_results, file_prefix=f"{unique_id}_1_{epsilon}")

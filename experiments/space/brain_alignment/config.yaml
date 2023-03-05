@@ -12,7 +12,7 @@ slurm: #TODO: SPECIFY
         mem: 90G # memory
         cpus-per-task: 6 # num cores
         time: 0-10:00:00 # max time, D-HH:MM
-  # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
+    # exclude: ibis216-010-[035,037,051,064,068-071],ibis216-224-[010,011],ibis-ceph-[002-005,008-019]
 
 fixed:
     path_data: /lustre/groups/ml01/workspace/moscot_paper/mouse-vizgen/adata_full.h5ad
@@ -25,4 +25,4 @@ grid:
     params:
         alpha:
             type: choice
-            options: [0.2, 0.5]
+            options: [0.3, 0.5]

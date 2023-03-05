@@ -51,12 +51,12 @@ def align_large(path_data: str, dataset: int, params: Dict, path_results: str):
             .solve(
                 rank=500,
                 max_iterations=150,
-                threshold=1e-5,
-                epsilon=0,
+                threshold=1e-6,
+                epsilon=1e-2,
                 alpha=alpha,
                 linear_solver_kwargs={
-                    "epsilon": 0,
-                    "threshold": 1e-5,
+                    "epsilon": 1e-2,
+                    "threshold": 1e-6,
                 },
             )
         )
