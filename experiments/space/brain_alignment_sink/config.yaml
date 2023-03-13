@@ -12,7 +12,7 @@ slurm: #TODO: SPECIFY
         mem: 90G # memory
         cpus-per-task: 6 # num cores
         time: 0-20:00:00 # max time, D-HH:MM
-        exclude: supergpu03pxe
+        # exclude: supergpu03pxe
 
 fixed:
     path_data: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/fgw_brain

@@ -91,7 +91,7 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         import tangram as tg
 
         learning_rate, num_epochs = params["learning_rate"], params["num_epochs"]
-        tg.pp_adatas(adata_sc, adata_sp_train, genes=true_df.columns.tolist())
+        tg.pp_adatas(adata_sc, adata_sp_train, genes=true_df.columns.tolist(), gene_to_lowercase=False)
         device = torch.device("cuda")
 
         start = time.perf_counter()
@@ -105,7 +105,7 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         end = time.perf_counter()
 
         ad_ge = tg.project_genes(ad_map, adata_sc)
-        true_df.columns = [a.lower() for a in true_df.columns]
+        # true_df.columns = [a.lower() for a in true_df.columns]
         pred_df = sc.get.obs_df(ad_ge, keys=true_df.columns.tolist())
 
         corr_results = _corr_results(true_df, pred_df)
