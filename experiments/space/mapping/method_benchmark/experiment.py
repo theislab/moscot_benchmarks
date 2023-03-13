@@ -149,6 +149,7 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         prob = prob.prepare(
             sc_attr={"attr": "obsm", "key": "X_pca"},
             var_names=adata_sp_train.var_names.values,
+            normalize=True,
         )
 
         start = time.perf_counter()
