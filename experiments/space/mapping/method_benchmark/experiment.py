@@ -91,7 +91,7 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         import tangram as tg
 
         learning_rate, num_epochs = params["learning_rate"], params["num_epochs"]
-        tg.pp_adatas(adata_sc, adata_sp_train, genes=true_df.columns.tolist(), gene_to_lowercase=False)
+        tg.pp_adatas(adata_sc, adata_sp_train, genes=true_df.columns.tolist())
         device = torch.device("cuda")
 
         start = time.perf_counter()
@@ -105,7 +105,7 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         end = time.perf_counter()
 
         ad_ge = tg.project_genes(ad_map, adata_sc)
-        # true_df.columns = [a.lower() for a in true_df.columns]
+        true_df.columns = [a.lower() for a in true_df.columns]
         pred_df = sc.get.obs_df(ad_ge, keys=true_df.columns.tolist())
 
         corr_results = _corr_results(true_df, pred_df)
@@ -183,7 +183,10 @@ def benchmark(path_data: str, dataset: int, seed: int, method: str, params: Dict
         return results
 
     def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[AnnData, AnnData, pd.DataFrame]:
+        import pandas as pd
+
         adata_sp = ad.read(Path(path_data) / f"dataset{dataset}_sp.h5ad")
+        adata_sp.var_names = pd.Index([a.lower() for a in adata_sp.var_names])
 
         rng = np.random.default_rng(seed)
         if "highly_variable" in adata_sp.var.columns:
