@@ -139,3 +139,9 @@ experiments/time/simulated_data/logs/*
 *.h5ad
 *.npy
 *.npz
+
+#seml
+*.out
+
+#files
+*.csv.gz

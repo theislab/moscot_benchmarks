@@ -66,19 +66,25 @@ class ExperimentWrapper:
 
     @ex.capture(prefix="model")
     def init_model(self, solver, tool):
-        from moscot.problems.space._alignment import SpatialAlignmentProblem
+        from moscot.problems.space import AlignmentProblem
+        import pandas as pd
 
         self.model_type = tool["type"]
         if self.model_type == "moscot":
-
-            self.problem = SpatialAlignmentProblem(self.adata)
-            self.problem.prepare(key="batch")
+            self.adata.obs["batch"] = pd.Categorical(self.adata.obs["batch"].astype(str))
+            self.problem = AlignmentProblem(self.adata).prepare(batch_key="batch")
 
             self.alpha = solver["alpha"]
             self.epsilon = solver["epsilon"]
-            self.rank = None if solver["rank"] == 0 else solver["rank"]
+            self.rank = solver["rank"]
         elif self.model_type == "gpsa":
-            pass
+            self.kernel = solver["kernel"]
+            self.n_epochs = solver["n_epochs"]
+            self.lr = solver["lr"]
+        elif self.model_type == "paste":
+            self.alpha = solver["alpha"]
+            self.dissimilarity = solver["dissimilarity"]
+            self.norm = solver["norm"]
         else:
             raise ValueError("Wrong model type.")
 
@@ -93,7 +99,9 @@ class ExperimentWrapper:
         if self.model_type == "moscot":
             test_results = compute_moscot(self.problem, self.adata, self.epsilon, self.rank, self.alpha)
         elif self.model_type == "gpsa":
-            test_results = compute_gpsa(self.adata)
+            test_results = compute_gpsa(self.adata, self.kernel, self.n_epochs, self.lr)
+        elif self.model_type == "paste":
+            test_results = compute_gpsa(self.adata, self.alpha, self.dissimilarity, self.norm)
         else:
             raise ValueError("Wrong model type.")
         test_results["n_obs"] = self.adata.shape[0]
@@ -102,10 +110,10 @@ class ExperimentWrapper:
         return test_results
 
 
-def compute_gpsa(adata):
+def compute_gpsa(adata, kernel, n_epochs, lr):
     from time import perf_counter
 
-    from gpsa import rbf_kernel
+    from gpsa import rbf_kernel, matern12_kernel
     from sklearn.metrics import mean_squared_error
     from gpsa.models.vgpsa import VariationalGPSA
     import torch
@@ -134,6 +142,7 @@ def compute_gpsa(adata):
     N_LATENT_GPS = {"expression": None}
 
     N_EPOCHS = 1000
+    KERNEL = rbf_kernel if kernel == "RBF" else matern12_kernel
 
     model = VariationalGPSA(
         data_dict,
@@ -145,8 +154,8 @@ def compute_gpsa(adata):
         grid_init=False,
         n_latent_gps=N_LATENT_GPS,
         mean_function="identity_fixed",
-        kernel_func_warp=rbf_kernel,
-        kernel_func_data=rbf_kernel,
+        kernel_func_warp=KERNEL,
+        kernel_func_data=KERNEL,
         fixed_view_idx=FIXED_VIEW_IDX,
     ).to(device)
 
@@ -174,12 +183,10 @@ def compute_gpsa(adata):
 
     start = perf_counter()
     for _ in range(N_EPOCHS):
-        loss, G_means = train(model, model.loss_fn, optimizer)
+        _, G_means = train(model, model.loss_fn, optimizer)
     compute_time = perf_counter() - start
 
     adata.obsm["spatial_aligned"] = G_means["expression"].detach().numpy()
-    ad1 = adata[adata.obs.batch == 0].copy()
-    ad2 = adata[adata.obs.batch == 1].copy()
     ad1 = adata[adata.obs.batch == 0].copy()
     ad2 = adata[adata.obs.batch == 1].copy()
     _, comm1, comm2 = np.intersect1d(ad1.obs.idx, ad2.obs.idx, return_indices=True)
@@ -197,28 +204,47 @@ def compute_moscot(problem, adata, epsilon, rank, alpha):
     from sklearn.metrics import mean_squared_error
 
     start = perf_counter()
-    problem.solve(epsilon=epsilon, rank=rank, alpha=alpha)
+    problem = problem.solve(
+        epsilon=epsilon,
+        rank=rank,
+        alpha=alpha,
+        max_iterations=100,
+        threshold=1e-5,
+    )
     compute_time = perf_counter() - start
+    problem.align(reference="0")
+    ad1 = adata[adata.obs.batch == "0"].copy()
+    ad2 = adata[adata.obs.batch == "1"].copy()
 
-    ad1 = adata[adata.obs.batch == 0].copy()
-    ad2 = adata[adata.obs.batch == 1].copy()
-
-    k = (0, 1)
-    p = problem.solution[k].solution.transport_matrix
-
-    Y = ad2.obsm["spatial"]
-    p = p / p.sum(1)[:, None]
-
-    X = ad2.obsm["spatial"].T @ p.T
-    X = X.T
-
-    adata.obsm["spatial_aligned"] = np.vstack([X, Y])
-    ad1 = adata[adata.obs.batch == 0].copy()
-    ad2 = adata[adata.obs.batch == 1].copy()
     _, comm1, comm2 = np.intersect1d(ad1.obs.idx, ad2.obs.idx, return_indices=True)
 
     test_results = {}
-    test_results["mse"] = mean_squared_error(ad1.obsm["spatial_aligned"][comm1], ad2.obsm["spatial_aligned"][comm2])
+    test_results["mse"] = mean_squared_error(ad1.obsm["spatial_norm_warp"][comm1], ad2.obsm["spatial_norm_warp"][comm2])
+    test_results["time"] = compute_time
+
+    return test_results
+
+
+def compute_paste(adata, alpha, dissimilarity, norm):
+    from time import perf_counter
+
+    from sklearn.metrics import mean_squared_error
+    import paste as pst
+
+    batch1 = adata[adata.obs.batch == 0].copy()
+    batch2 = adata[adata.obs.batch == 1].copy()
+    start = perf_counter()
+    pi12 = pst.pairwise_align(batch1, batch2, alpha=alpha, dissimilarity=dissimilarity, norm=norm)
+    compute_time = perf_counter() - start
+    pi12norm = pi12 / pi12.sum(0)
+    out = (batch1.obsm["spatial"].T @ pi12norm).T
+    batch1.obsm["spatial_warp"] = batch1.obsm["spatial"]
+    batch2.obsm["spatial_warp"] = out
+
+    _, comm1, comm2 = np.intersect1d(batch1.obs.idx, batch2.obs.idx, return_indices=True)
+
+    test_results = {}
+    test_results["mse"] = mean_squared_error(batch1.obsm["spatial_warp"][comm1], batch2.obsm["spatial_warp"][comm2])
     test_results["time"] = compute_time
 
     return test_results

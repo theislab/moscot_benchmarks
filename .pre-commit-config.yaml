@@ -7,7 +7,7 @@ default_stages:
 minimum_pre_commit_version: 2.14.0
 repos:
 -   repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.10.0
     hooks:
     -   id: black
         additional_dependencies: [toml]
@@ -34,7 +34,6 @@ repos:
     -   id: check-merge-conflict
     -   id: check-ast
     -   id: check-symlinks
-    -   id: check-added-large-files
     -   id: check-executables-have-shebangs
     -   id: fix-encoding-pragma
         args: [--remove]
