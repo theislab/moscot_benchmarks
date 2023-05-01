@@ -1,4 +1,4 @@
-Code for running Sinkhorn step for alignment.
+Code for running FGW step for alignment.
 
 ## Code
 - `experiment.py`: SEML experiment file.
