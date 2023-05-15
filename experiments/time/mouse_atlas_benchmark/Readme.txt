@@ -1,4 +1,4 @@
-These are the numpy dictionaries where total runtime and memory consumption every 0.01s is stored for the benchmark on the mouse atlas.
+The zipped file contains numpy dictionaries where total runtime and memory consumption every 0.01s is stored for moscot run on the mouse atlas data, see Qiu et al., Systematic reconstruction of cellular trajectories across mouse embryogenesis, nature genentics, 2022.
 
 The files names are as {method}_{cell number in source and target in multiples of 1,000}_{CPU or GPU}.npy
 
