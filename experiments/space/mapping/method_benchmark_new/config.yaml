@@ -1,26 +1,33 @@
-launcher:
-    defaults:
-    -   override /hydra/launcher: submitit_slurm
+# @package _global_
 
-    hydra:
-        launcher:
-            partition: gpu_p
-            qos: gpu_normal # gpu_normal
-            cpus_per_task: 6
-            mem_gb: 90GB # 200
-            gres: gpu:1
-            timeout_min: 1440
-            array_parallelism: 10
-            name: fgw-mapping
+launcher:
+  defaults:
+  - override /hydra/launcher: submitit_slurm
+
+  hydra:
+    launcher:
+      partition: gpu_p
+      qos: gpu_normal # gpu_normal
+      cpus_per_task: 6
+      mem_gb: 90GB # 200
+      gres: gpu:1
+      timeout_min: 1440
+      array_parallelism: 10
+      name: fgw-mapping
+
+dataset:
+seed:
 
 paths:
-    path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data
-    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping_methods
-
-sweeper:
+  path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data
+  path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping_methods
+hydra:
+  job:
+    name: pretrain
+  sweeper:
     params:
-        dataset: [30, 37] #, 37, 45, 26, 22, 33, 32, 14, 3, 20, 21, 41, 1, 39]
-        seed: [42] #, 224, 422]
+      dataset: [30, 37] #, 37, 45, 26, 22, 33, 32, 14, 3, 20, 21, 41, 1, 39]
+      seed: [42] #, 224, 422]
 
 # moscot:
 #   fixed:
