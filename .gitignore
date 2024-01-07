@@ -145,3 +145,6 @@ experiments/time/simulated_data/logs/*
 
 #files
 *.csv.gz
+multirun
+*.out
+*.err
