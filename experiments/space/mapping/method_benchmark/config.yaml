@@ -1,24 +1,17 @@
-launcher:
-    defaults:
-    -   override /hydra/launcher: submitit_slurm
+# @package _global_
 
-    hydra:
-        launcher:
-            partition: gpu_p
-            qos: gpu_normal # gpu_normal
-            cpus_per_task: 6
-            mem_gb: 90GB # 200
-            gres: gpu:1
-            timeout_min: 1440
-            array_parallelism: 10
-            name: fgw-mapping
+defaults:
+-   _self_
+-   launcher: default
 
-dataset:
-seed:
+dataset: 32
+seed: 42
 method:
     name:
     epsilon:
     alpha:
+    rep:
+    cost:
     learning_rate:
     num_epochs:
     epochs:
@@ -27,14 +20,14 @@ method:
 paths:
     path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data
     path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping_methods
+
 hydra:
     job:
         name: mapping_benchmark
     sweeper:
         params:
-            dataset: 30, #, 37, 45, 26, 22, 33, 32, 14, 3, 20, 21, 41, 1, 39]
-            seed: 42 #, 224, 422]
-
+            dataset: 30, 37, 45, 26, 22, 33, 32, 14, 3, 20, 21, 41, 1, 39
+            seed: 42, 224, 422222
 # moscot:
 #   fixed:
 #     method: MOSCOT
