@@ -12,6 +12,7 @@ method:
     alpha:
     rep:
     cost:
+    tau:
     learning_rate:
     num_epochs:
     epochs:

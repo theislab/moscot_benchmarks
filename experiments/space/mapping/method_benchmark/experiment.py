@@ -170,7 +170,13 @@ def benchmark(cfg):
         config.update("jax_enable_x64", True)
         from moscot.problems.space import MappingProblem
 
-        epsilon, alpha, rep, cost = params["epsilon"], params["alpha"], params["rep"], params["cost"]
+        epsilon, alpha, rep, cost, tau = (
+            params["epsilon"],
+            params["alpha"],
+            params["rep"],
+            params["cost"],
+            params["tau"],
+        )
 
         if rep == "pca":
             joint_attr = {"attr": "obsm", "key": "X_pca"}
@@ -180,16 +186,35 @@ def benchmark(cfg):
             raise ValueError("Rep not implemented")
 
         prob = MappingProblem(adata_sc=adata_sc, adata_sp=adata_sp_train)
-        prob = prob.prepare(
-            sc_attr={"attr": "obsm", "key": "X_pca"},
-            joint_attr=joint_attr,
-            var_names=adata_sp_train.var_names.values,
-            normalize=True,
-            cost=cost,
-        )
+        if cost == "geodesic":
+            cost = "sq_euclidean"  # only for gromov term, for linear do geodeisc
+            adata_full = ad.concat([adata_sp_train, adata_sc])
+            sc.pp.neighbors(adata_full, n_neighbors=15, use_rep="X")
+            df = pd.DataFrame(
+                index=adata_full.obs_names,
+                columns=adata_full.obs_names,
+                data=adata_full.obsp["connectivities"].A.astype("float64"),
+            )
+
+            prob = prob.prepare(
+                sc_attr={"attr": "obsm", "key": "X_pca"},
+                joint_attr=joint_attr,
+                var_names=adata_sp_train.var_names.values,
+                normalize=True,
+                cost=cost,
+            )
+            prob[("src", "tgt")].set_graph_xy(df, cost="geodesic")
+        else:
+            prob = prob.prepare(
+                sc_attr={"attr": "obsm", "key": "X_pca"},
+                joint_attr=joint_attr,
+                var_names=adata_sp_train.var_names.values,
+                normalize=True,
+                cost=cost,
+            )
 
         start = time.perf_counter()
-        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=5000, threshold=1e-5)
+        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=5000, threshold=1e-5, tau_a=tau)
         end = time.perf_counter()
 
         converged = prob.solutions[list(prob.solutions.keys())[0]].converged
@@ -246,6 +271,7 @@ def benchmark(cfg):
             "alpha": cfg.method.alpha,
             "rep": cfg.method.rep,
             "cost": cfg.method.cost,
+            "tau": cfg.method.tau,
         }
         results = _moscot(
             adata_sc=adata_sp_a,
