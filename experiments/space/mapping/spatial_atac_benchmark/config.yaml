@@ -1,0 +1,27 @@
+# @package _global_
+
+defaults:
+-   _self_
+-   launcher: default
+
+paths:
+    path_data: /lustre/groups/ml01/workspace/moscot_paper/mapping/atac
+    adata_rna: RNA.h5ad
+    adata_atac: ATAC.h5ad
+    path_results: /lustre/groups/ml01/workspace/moscot_paper/mapping/atac_results
+
+moscot:
+    cost: sq_euclidean
+    sc_attr: X_pca
+    alpha: 0.1
+    epsilon: 0
+    tau_a: 1
+
+hydra:
+    job:
+        name: mapping_protein
+    sweeper:
+        params:
+            moscot.alpha: 0.3, 0.1, 0.5
+            moscot.sc_attr: X_pca, X_pca_ATAC
+            moscot.tau_a: 1, 0.999 #, 0.5, 0.2, 0.1
