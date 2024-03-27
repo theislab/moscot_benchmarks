@@ -1,0 +1,65 @@
+# @package _global_
+
+defaults:
+-   _self_
+-   launcher: default
+
+dataset: 32
+seed: 42
+method:
+    name:
+    epsilon:
+    alpha:
+    rep:
+    cost:
+    tau:
+    learning_rate:
+    num_epochs:
+    epochs:
+    n_latent:
+
+paths:
+    path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/mapping/mouse_embryo
+    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mouse_embryo
+
+hydra:
+    job:
+        name: mapping_benchmark_embryo
+    sweeper:
+        params:
+            seed: 42, 224, 422222
+# moscot:
+#   fixed:
+#     method: MOSCOT
+#   grid:
+#     params:
+#       epsilon:
+#         type: choice
+#         options: [1e-2, 5e-3]
+#       alpha:
+#         type: choice
+#         options: [0.1, 0.5, 0.9]
+
+# tangram:
+#   fixed:
+#     method: TANGRAM
+#   grid:
+#     params:
+#       learning_rate:
+#         type: choice
+#         options: [0.1, 0.01]
+#       num_epochs:
+#         type: choice
+#         options: [500, 1000, 2000]
+
+# gimvi:
+#   fixed:
+#     method: GIMVI
+#   grid:
+#     params:
+#       epochs:
+#         type: choice
+#         options: [200, 400, 600]
+#       n_latent:
+#         type: choice
+#         options: [10, 20]
