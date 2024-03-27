@@ -17,6 +17,7 @@ method:
     num_epochs:
     epochs:
     n_latent:
+    quad:
 
 paths:
     path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data

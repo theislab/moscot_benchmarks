@@ -170,22 +170,37 @@ def benchmark(cfg):
         config.update("jax_enable_x64", True)
         from moscot.problems.space import MappingProblem
 
-        epsilon, alpha, rep, cost, tau = (
+        epsilon, alpha, rep, cost, tau, quad = (
             params["epsilon"],
             params["alpha"],
             params["rep"],
             params["cost"],
             params["tau"],
+            params["quad"],
         )
 
         if rep == "pca":
-            joint_attr = {"attr": "obsm", "key": "X_pca"}
+            # joint_attr = {"attr": "obsm", "key": "X_pca"}
+            joint_attr = None  # computed with callback
         elif rep == "x":
             joint_attr = {"attr": "X"}
         else:
             raise ValueError("Rep not implemented")
 
+        if quad == "spatial":
+            quad_attr = "spatial"
+        elif quad == "pca_spatial":
+            quad_attr = "X_pca_spatial"
+        else:
+            raise ValueError("Rep not implemented")
+
+        spatial = adata_sp_train.obsm["spatial"]
+        spatial = (spatial - spatial.mean()) / spatial.std()
+        adata_sp_train.obsm["spatial"] = spatial
+        adata_sp_train.obsm["X_pca_spatial"] = np.hstack([adata_sp_train.obsm["X_pca"], spatial])
+
         prob = MappingProblem(adata_sc=adata_sc, adata_sp=adata_sp_train)
+
         if cost == "geodesic":
             cost = "sq_euclidean"  # only for gromov term, for linear do geodeisc
             adata_full = ad.concat([adata_sp_train, adata_sc])
@@ -200,7 +215,8 @@ def benchmark(cfg):
                 sc_attr={"attr": "obsm", "key": "X_pca"},
                 joint_attr=joint_attr,
                 var_names=adata_sp_train.var_names.values,
-                normalize=True,
+                spatial_key=quad_attr,
+                normalize_spatial=False,
                 cost=cost,
             )
             prob[("src", "tgt")].set_graph_xy(df, cost="geodesic")
@@ -209,12 +225,13 @@ def benchmark(cfg):
                 sc_attr={"attr": "obsm", "key": "X_pca"},
                 joint_attr=joint_attr,
                 var_names=adata_sp_train.var_names.values,
-                normalize=True,
+                spatial_key=quad_attr,
+                normalize_spatial=False,
                 cost=cost,
             )
 
         start = time.perf_counter()
-        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=5000, threshold=1e-5, tau_a=tau)
+        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=5000, threshold=1e-7, tau_a=tau, tau_b=tau)
         end = time.perf_counter()
 
         converged = prob.solutions[list(prob.solutions.keys())[0]].converged
@@ -272,6 +289,7 @@ def benchmark(cfg):
             "rep": cfg.method.rep,
             "cost": cfg.method.cost,
             "tau": cfg.method.tau,
+            "quad": cfg.method.quad,
         }
         results = _moscot(
             adata_sc=adata_sp_a,
