@@ -17,18 +17,16 @@ method:
     num_epochs:
     epochs:
     n_latent:
-    quad:
 
 paths:
-    path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/processed_data
-    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mapping_methods
+    path_data: /lustre/groups/ml01/workspace/giovanni.palla/moscot/mapping/mouse_embryo
+    path_results: /lustre/groups/ml01/workspace/moscot_paper/benchmarks/space/mouse_embryo
 
 hydra:
     job:
-        name: mapping_benchmark
+        name: mapping_benchmark_embryo
     sweeper:
         params:
-            dataset: 30, 37, 45, 26, 22, 33, 32, 14, 3, 20, 21, 41, 1, 39
             seed: 42, 224, 422222
 # moscot:
 #   fixed:

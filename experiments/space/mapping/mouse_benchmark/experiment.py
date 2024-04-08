@@ -12,40 +12,27 @@ import anndata as ad
 
 
 def _read_process_anndata(path_data: str, dataset: int, seed: int) -> Tuple[ad.AnnData, ad.AnnData, pd.DataFrame]:
-    import pandas as pd
+    pass
 
     import numpy as np
 
     import scanpy as sc
 
-    adata_sp = ad.read(Path(path_data) / f"dataset{dataset}_sp.h5ad")
-    adata_sp.var_names = pd.Index([a.lower() for a in adata_sp.var_names])
+    adata_sp = ad.read_h5ad(Path(path_data) / "mouse_embryo_spatial_1.h5ad")
+    adata_sc = ad.read_h5ad(Path(path_data) / "mouse_embryo_sc.h5ad")
 
     rng = np.random.default_rng(seed)
-    if "highly_variable" in adata_sp.var.columns:
-        adata_sp = adata_sp[:, adata_sp.var.highly_variable].copy()
-        n_genes = 100
-    else:
-        n_genes = 10
-
-    adata_sp_a = sc.pp.subsample(adata_sp, fraction=0.5, copy=True, random_state=seed)
-    adata_sp_b = adata_sp[~np.in1d(adata_sp.obs_names, adata_sp_a.obs_names)].copy()
-
+    n_genes = 50
     test_var = rng.choice(adata_sp.var_names, n_genes, replace=False).tolist()
     train_var = adata_sp.var_names[~np.in1d(adata_sp.var_names, test_var)].tolist()
-    true_df = sc.get.obs_df(adata_sp_b, keys=test_var)
+    true_df = sc.get.obs_df(adata_sp, keys=test_var)
 
-    adata_sp_a_train = adata_sp_a[:, train_var].copy()
-    adata_sp_b_train = adata_sp_b[:, train_var].copy()
-
-    sc.tl.pca(adata_sp_b_train)
-    sc.tl.pca(adata_sp_a_train)
-
-    adata_sp_a.obsm["X_pca"] = adata_sp_a_train.obsm["X_pca"].copy()
-    assert len(adata_sp_a.var_names) == (len(adata_sp_b_train.var_names) + len(test_var))
-    test_df = sc.get.obs_df(adata_sp_a, keys=test_var)
-    np.testing.assert_array_equal(test_df.columns, true_df.columns)
-    return adata_sp_a, adata_sp_b_train, true_df
+    sc.tl.pca(adata_sc)
+    adata_sp = adata_sp[:, train_var].copy()
+    full_sc_genes = set(adata_sc[:, adata_sc.var.highly_variable].var_names).union(set(adata_sp.var_names))
+    adata_sc = adata_sc[:, list(full_sc_genes)].copy()
+    sc.tl.pca(adata_sp)
+    return adata_sc, adata_sp, true_df
 
 
 def benchmark(cfg):
@@ -170,37 +157,22 @@ def benchmark(cfg):
         config.update("jax_enable_x64", True)
         from moscot.problems.space import MappingProblem
 
-        epsilon, alpha, rep, cost, tau, quad = (
+        epsilon, alpha, rep, cost, tau = (
             params["epsilon"],
             params["alpha"],
             params["rep"],
             params["cost"],
             params["tau"],
-            params["quad"],
         )
 
         if rep == "pca":
-            # joint_attr = {"attr": "obsm", "key": "X_pca"}
-            joint_attr = None  # computed with callback
+            joint_attr = {"attr": "obsm", "key": "X_pca"}
         elif rep == "x":
             joint_attr = {"attr": "X"}
         else:
             raise ValueError("Rep not implemented")
 
-        if quad == "spatial":
-            quad_attr = "spatial"
-        elif quad == "pca_spatial":
-            quad_attr = "X_pca_spatial"
-        else:
-            raise ValueError("Rep not implemented")
-
-        spatial = adata_sp_train.obsm["spatial"]
-        spatial = (spatial - spatial.mean()) / spatial.std()
-        adata_sp_train.obsm["spatial"] = spatial
-        adata_sp_train.obsm["X_pca_spatial"] = np.hstack([adata_sp_train.obsm["X_pca"], spatial])
-
         prob = MappingProblem(adata_sc=adata_sc, adata_sp=adata_sp_train)
-
         if cost == "geodesic":
             cost = "sq_euclidean"  # only for gromov term, for linear do geodeisc
             adata_full = ad.concat([adata_sp_train, adata_sc])
@@ -215,8 +187,7 @@ def benchmark(cfg):
                 sc_attr={"attr": "obsm", "key": "X_pca"},
                 joint_attr=joint_attr,
                 var_names=adata_sp_train.var_names.values,
-                spatial_key=quad_attr,
-                normalize_spatial=False,
+                normalize=True,
                 cost=cost,
             )
             prob[("src", "tgt")].set_graph_xy(df, cost="geodesic")
@@ -225,13 +196,12 @@ def benchmark(cfg):
                 sc_attr={"attr": "obsm", "key": "X_pca"},
                 joint_attr=joint_attr,
                 var_names=adata_sp_train.var_names.values,
-                spatial_key=quad_attr,
-                normalize_spatial=False,
+                normalize=True,
                 cost=cost,
             )
 
         start = time.perf_counter()
-        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=5000, threshold=1e-7, tau_a=tau, tau_b=tau)
+        prob = prob.solve(epsilon=epsilon, alpha=alpha, max_iterations=5000, threshold=1e-5, tau_a=tau)
         end = time.perf_counter()
 
         converged = prob.solutions[list(prob.solutions.keys())[0]].converged
@@ -280,7 +250,7 @@ def benchmark(cfg):
     path_results = Path(cfg.paths.path_results) / unique_id
     os.makedirs(path_results, exist_ok=True)
     # read data and processing
-    adata_sp_a, adata_sp_b, true_df = _read_process_anndata(path_data, dataset, seed)
+    adata_sc, adata_sp, true_df = _read_process_anndata(path_data, dataset, seed)
 
     if method == "MOSCOT":
         params = {
@@ -289,11 +259,10 @@ def benchmark(cfg):
             "rep": cfg.method.rep,
             "cost": cfg.method.cost,
             "tau": cfg.method.tau,
-            "quad": cfg.method.quad,
         }
         results = _moscot(
-            adata_sc=adata_sp_a,
-            adata_sp_train=adata_sp_b,
+            adata_sc=adata_sc,
+            adata_sp_train=adata_sp,
             true_df=true_df,
             method=method,
             params=params,
@@ -304,8 +273,8 @@ def benchmark(cfg):
     elif method == "GIMVI":
         params = {"epochs": cfg.method.epochs, "n_latent": cfg.method.n_latent}
         results = _gimvi(
-            adata_sc=adata_sp_a,
-            adata_sp_train=adata_sp_b,
+            adata_sc=adata_sc,
+            adata_sp_train=adata_sp,
             true_df=true_df,
             method=method,
             params=params,
@@ -316,8 +285,8 @@ def benchmark(cfg):
     elif method == "TANGRAM":
         params = {"learning_rate": cfg.method.learning_rate, "num_epochs": cfg.method.num_epochs}
         results = _tangram(
-            adata_sc=adata_sp_a,
-            adata_sp_train=adata_sp_b,
+            adata_sc=adata_sc,
+            adata_sp_train=adata_sp,
             true_df=true_df,
             method=method,
             params=params,
